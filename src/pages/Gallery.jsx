@@ -7,7 +7,7 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
 
   // ID Raíz de la Empresa (El que pondrán en el Dashboard. Aquí está quemado temporalmente para el Escuadrón)
-  const rootFolderId = "16Gm8YLOqlVWmdMvFn2eb3msT4aFkom6W";
+  const rootFolderId = "1bVaOYZnxRoeF1SRfPgZ-tGU2mpM8R-9k";
 
   // Efecto 1: Cargar la lista de Carpetas (Álbumes) al inicio
   useEffect(() => {
