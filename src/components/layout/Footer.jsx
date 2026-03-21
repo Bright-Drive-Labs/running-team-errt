@@ -13,17 +13,17 @@ export default function Footer() {
                 LENTO Y<br />CONTENTO
               </h2>
               <p className="text-slate-500 max-w-sm mt-6 font-medium">
-                Únete a la mejor comunidad de corredores. Más que un equipo, somos una familia impulsada por la pasión y la alegría pura.
+                Únete a la comunidad donde cada paso cuenta. Más que un equipo, somos una familia que corre por la alegría de compartir la ruta y la pasión de llegar juntos, sin importar el reloj.
               </p>
             </div>
             <div className="mt-12 flex items-center gap-6">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-rumbero-red hover:border-rumbero-red transition-all group">
+              <a href="https://instagram.com/escuadronrumbero.running" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-rumbero-red hover:border-rumbero-red transition-all group">
                 <Instagram className="w-5 h-5 text-slate-400 group-hover:text-white" />
               </a>
               <a href="https://wa.me/57000000" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-rumbero-red hover:border-rumbero-red transition-all group">
                 <MessageCircle className="w-5 h-5 text-slate-400 group-hover:text-white" />
               </a>
-              <a href="mailto:contact@escuadronrumbero.com" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-rumbero-red hover:border-rumbero-red transition-all group">
+              <a href="mailto:escuadronrumbero.running@gmail.com" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-rumbero-red hover:border-rumbero-red transition-all group">
                 <Mail className="w-5 h-5 text-slate-400 group-hover:text-white" />
               </a>
             </div>
@@ -49,11 +49,13 @@ export default function Footer() {
           {/* Contact Details */}
           <div className="lg:col-span-2">
             <h4 className="text-white font-black uppercase tracking-widest text-sm mb-8">Contacto</h4>
-            <p className="text-rumbero-red font-bold text-sm mb-4">contacto@escuadronrumbero.com</p>
+            <p className="text-rumbero-red font-bold text-sm mb-4">escuadronrumbero.running@gmail.com</p>
             <p className="text-slate-500 text-xs leading-relaxed">
-              Sede Central<br />
-              Pista Atlética<br />
-              Bogotá, Colombia
+              Punto de Encuentro<br />
+              <a href="https://maps.app.goo.gl/ssiQ3pSff5FCLz5z8" target="_blank" rel="noreferrer" className="text-white hover:text-rumbero-red transition-colors underline decoration-white/30 underline-offset-2">
+                Ver en Google Maps
+              </a><br />
+              Paseo de la Virgen<br/>El Tigre, Edo. Anzoátegui, Venezuela
             </p>
           </div>
         </div>
@@ -63,8 +65,8 @@ export default function Footer() {
             © {new Date().getFullYear()} ESCUADRÓN RUMBERO. TODOS LOS DERECHOS RESERVADOS.
           </p>
           <div className="flex items-center gap-8">
-            <Link to="#" className="text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">Privacy Policy</Link>
-            <Link to="#" className="text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">Terms of Service</Link>
+            <Link to="#" className="text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">Política de Privacidad</Link>
+            <Link to="#" className="text-slate-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">Términos de Servicio</Link>
           </div>
         </div>
       </div>

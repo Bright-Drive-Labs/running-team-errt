@@ -14,12 +14,12 @@ export default function Navbar() {
         </Link>
         {/* Navigation Links */}
         <div className="hidden lg:flex items-center gap-8">
-          <Link to="/" className="text-slate-100 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Home</Link>
-          <Link to="/about" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">About Us</Link>
-          <Link to="/training" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Calendar</Link>
-          <Link to="/events" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Events</Link>
-          <Link to="/gallery" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Gallery</Link>
-          <Link to="/contact" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Contact</Link>
+          <Link to="/" className="text-slate-100 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Inicio</Link>
+          <Link to="/about" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Sobre Nosotros</Link>
+          <Link to="/training" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Entrenamientos</Link>
+          <Link to="/events" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Eventos</Link>
+          <Link to="/gallery" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Galería</Link>
+          <Link to="/contact" className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest">Contacto</Link>
         </div>
         {/* CTA Button */}
         <Link to="/contact" className="hidden lg:inline-block bg-rumbero-red hover:bg-red-700 text-white px-8 py-3 rounded font-black text-sm uppercase tracking-tighter transition-all hover:scale-105 active:scale-95">

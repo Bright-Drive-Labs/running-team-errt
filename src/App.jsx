@@ -8,6 +8,8 @@ import Calendar from './pages/Calendar'
 import Gallery from './pages/Gallery'
 import Contact from './pages/Contact'
 import Events from './pages/Events'
+import EventSuccess from './pages/EventSuccess'
+import AdminRoster from './pages/AdminRoster'
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/success" element={<EventSuccess />} />
+          <Route path="/admin/roster" element={<AdminRoster />} />
         </Routes>
       </main>
       <Footer />

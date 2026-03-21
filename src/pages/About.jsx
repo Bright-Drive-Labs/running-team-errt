@@ -1,6 +1,37 @@
-import { Quote, Target, Heart, Award } from "lucide-react";
+import React, { useState } from "react";
+import { Quote, Target, Heart, Award, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function About() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const carouselImages = [
+    { src: '/174409.JPG', label: 'Pista' },
+    { src: '/174404.JPG', label: 'Carrera' },
+    { src: '/174359.JPG', label: 'Asfalto' },
+    { src: '/174363.JPG', label: 'Celebración', rotate: true },
+    { src: '/174260.JPG', label: 'Historia' },
+    { src: '/174261.JPG', label: 'Entrenamientos' },
+    { src: '/174355.jpg', label: 'Equipo' },
+    { src: '/174424.JPG', label: 'Fuerza' },
+    { src: '/171125.jpg', label: 'Velocidad' }
+  ];
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+  
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const getRelativePosition = (index) => {
+    let diff = index - currentIndex;
+    const length = carouselImages.length;
+    if (diff > Math.floor(length / 2)) diff -= length;
+    if (diff < -Math.floor(length / 2)) diff += length;
+    return diff;
+  };
+
   return (
     <div className="bg-rumbero-white min-h-screen">
       {/* Header section */}
@@ -12,7 +43,7 @@ export default function About() {
               Nuestra <span className="text-rumbero-red">Historia</span>
             </h1>
             <p className="text-slate-400 text-xl md:text-2xl leading-relaxed">
-              Nacidos en 2022 de la pasión por devorar kilómetros y el deseo de crear una comunidad donde todos encajan. En el Escuadrón Rumbero, no importa si corres a 4:00 o a 7:30 el km, lo que importa es el movimiento.
+              "Nacimos en 2022 como un grupo de amigos decididos a transformar el running de una actividad solitaria en un estilo de vida compartido. Hoy, el Escuadrón Rumbero es una familia en movimiento donde lo que importa no es el cronómetro, sino el propósito de avanzar juntos y sin presiones. No importa si corres a 4:00 o a 7:30 el kilómetro, aquí celebramos la constancia de quienes disfrutan cada tramo de la ruta y mantenemos el compromiso innegociable de nunca dejar de moverse."
             </p>
           </div>
           
@@ -24,7 +55,7 @@ export default function About() {
             {/* Image frame */}
             <div className="relative border border-white/10 rounded-2xl overflow-hidden shadow-2xl transform md:rotate-2 group-hover:rotate-0 transition-all duration-500 bg-rumbero-black z-10">
               <img 
-                src="/165441_2.jpg" 
+                src="/174260.JPG" 
                 alt="Escuadrón Rumbero" 
                 className="w-full h-auto object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700" 
               />
@@ -39,9 +70,9 @@ export default function About() {
         <div className="max-w-4xl mx-auto text-center">
           <Quote className="w-16 h-16 mx-auto text-white/30 mb-8" />
           <h2 className="text-3xl md:text-5xl text-white font-black uppercase tracking-tighter italic leading-snug mb-8">
-            "El dolor es temporal, pero la satisfacción de cruzar la meta con tu equipo es para toda la vida."
+            "Mi mayor orgullo es verte llegar a la meta sonriendo, agradeciendo a Dios por el camino recorrido y sabiendo que cada gota de sudor valió la pena."
           </h2>
-          <p className="text-white font-bold uppercase tracking-widest">— Coach Principal M.A.</p>
+          <p className="text-white font-bold uppercase tracking-widest">— Dany Perez, Coach Principal</p>
         </div>
       </section>
 
@@ -72,13 +103,72 @@ export default function About() {
         </div>
       </section>
 
-      {/* Simple Image Grid Placeholder */}
-      <section className="pb-24 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="h-64 bg-slate-200 rounded-lg shadow-inner flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest italic text-xs">Pista</div>
-          <div className="h-64 bg-slate-300 rounded-lg shadow-inner flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest italic text-xs">Montaña</div>
-          <div className="h-64 bg-slate-200 rounded-lg shadow-inner flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest italic text-xs">Asfalto</div>
-          <div className="h-64 bg-slate-300 rounded-lg shadow-inner flex items-center justify-center text-slate-500 font-bold uppercase tracking-widest italic text-xs">Celebración</div>
+      {/* 3D Infinity Coverflow Carousel */}
+      <section className="pb-32 px-6 max-w-[1400px] mx-auto overflow-hidden">
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic text-rumbero-black">Momentos <span className="text-rumbero-red">Rumberos</span></h2>
+          <div className="flex gap-4">
+            <button onClick={handlePrev} className="w-12 h-12 bg-slate-200 hover:bg-rumbero-red hover:text-white rounded-full flex items-center justify-center transition-colors z-40">
+              <ChevronLeft size={24} />
+            </button>
+            <button onClick={handleNext} className="w-12 h-12 bg-slate-200 hover:bg-rumbero-red hover:text-white rounded-full flex items-center justify-center transition-colors z-40">
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        </div>
+        
+        <div className="relative w-full h-[450px] md:h-[550px] lg:h-[650px] flex items-center justify-center bg-transparent mt-10">
+          {carouselImages.map((img, index) => {
+            const pos = getRelativePosition(index);
+            
+            // Default styling for items far away (invisible)
+            let transformClasses = "scale-50 opacity-0 z-0 pointer-events-none";
+            
+            if (pos === 0) {
+              // Center image
+              transformClasses = "scale-100 opacity-100 z-30 translate-x-0 cursor-default shadow-2xl";
+            } else if (pos === 1) {
+              // Right image
+              transformClasses = "scale-[0.80] opacity-60 z-20 translate-x-32 md:translate-x-[22rem] cursor-pointer shadow-xl hover:opacity-100";
+            } else if (pos === -1) {
+              // Left image
+              transformClasses = "scale-[0.80] opacity-60 z-20 -translate-x-32 md:-translate-x-[22rem] cursor-pointer shadow-xl hover:opacity-100";
+            } else if (pos === 2) {
+              // Far right image
+              transformClasses = "scale-[0.60] opacity-0 md:opacity-30 z-10 translate-x-64 md:translate-x-[36rem] pointer-events-none";
+            } else if (pos === -2) {
+              // Far left image
+              transformClasses = "scale-[0.60] opacity-0 md:opacity-30 z-10 -translate-x-64 md:-translate-x-[36rem] pointer-events-none";
+            }
+
+            return (
+              <div 
+                key={index}
+                onClick={() => { if (pos !== 0) setCurrentIndex(index); }}
+                onMouseEnter={() => { if (Math.abs(pos) === 1) setCurrentIndex(index); }}
+                className={`absolute w-72 md:w-[400px] lg:w-[500px] h-96 md:h-[550px] lg:h-[650px] rounded-2xl overflow-hidden transition-all duration-700 ease-out flex items-center justify-center group ${transformClasses}`}
+              >
+                {/* Blurry stretched background to fill empty space elegantly */}
+                <div 
+                  className={`absolute inset-0 bg-cover bg-center blur-2xl scale-150 opacity-40 transition-transform duration-1000 group-hover:scale-[1.6] ${img.rotate ? 'rotate-180' : ''}`}
+                  style={{ backgroundImage: `url('${img.src}')` }}
+                ></div>
+
+                {/* Main uncropped image */}
+                <div 
+                  className={`absolute inset-0 bg-contain bg-no-repeat bg-center transition-transform duration-1000 group-hover:scale-105 ${img.rotate ? 'rotate-180' : ''}`}
+                  style={{ backgroundImage: `url('${img.src}')` }}
+                ></div>
+                
+                {/* Overlay that is darker when not focused, brighter when focused */}
+                <div className={`absolute inset-0 transition-colors duration-700 mix-blend-multiply ${pos === 0 ? 'bg-transparent' : 'bg-black/60 group-hover:bg-red-900/40'}`}></div>
+                
+                <span className={`relative z-10 text-white font-black uppercase tracking-widest italic text-xl drop-shadow-xl transition-all duration-700 ${pos === 0 ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}>
+                  {img.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
