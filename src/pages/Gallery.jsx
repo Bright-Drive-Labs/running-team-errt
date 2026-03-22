@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import API_BASE_URL from '../apiConfig';
 
 export default function Gallery() {
   const [albums, setAlbums] = useState([]);
@@ -13,7 +14,7 @@ export default function Gallery() {
   useEffect(() => {
     if (selectedAlbum) return; // Si hay un álbum seleccionado, no recargues la raíz
     setLoading(true);
-    fetch(`http://localhost:3000/api/gallery/albums/${rootFolderId}`)
+    fetch(`${API_BASE_URL}/api/gallery/albums/${rootFolderId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -32,7 +33,7 @@ export default function Gallery() {
     if (!selectedAlbum) return;
     setLoading(true);
     setImages([]); // Limpiamos fotos viejas
-    fetch(`http://localhost:3000/api/gallery/${selectedAlbum.id}`)
+    fetch(`${API_BASE_URL}/api/gallery/${selectedAlbum.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -93,7 +94,7 @@ export default function Gallery() {
                 {album.coverId ? (
                    <>
                      <img 
-                       src={`http://localhost:3000/api/image/${album.coverId}`} 
+                       src={`${API_BASE_URL}/api/image/${album.coverId}`} 
                        alt={`Portada de ${album.name}`}
                        className="w-full h-auto block transform group-hover:scale-110 transition-transform duration-700 z-0" 
                      />
@@ -141,7 +142,7 @@ export default function Gallery() {
               {images.map((img) => (
                 <div key={img.id} className="relative group overflow-hidden bg-slate-200 rounded-xl break-inside-avoid shadow-sm hover:shadow-2xl transition-all duration-300">
                   <img 
-                    src={`http://localhost:3000/api/image/${img.id}`} 
+                    src={`${API_BASE_URL}/api/image/${img.id}`} 
                     alt={img.name} 
                     className="w-full h-auto block transform group-hover:scale-105 transition-transform duration-[2s]"
                     loading="lazy"

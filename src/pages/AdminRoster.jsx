@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_BASE_URL from "../apiConfig";
 import { Users, Lock, Download, Gift, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -16,7 +17,7 @@ export default function AdminRoster() {
   const fetchRoster = async (passArg = password) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/admin/reports/registrations", {
+      const res = await fetch(`${API_BASE_URL}/api/admin/reports/registrations`, {
         headers: {
           'x-admin-password': passArg
         }

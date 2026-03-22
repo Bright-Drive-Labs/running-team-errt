@@ -1,4 +1,5 @@
 import { useState } from "react";
+import API_BASE_URL from "../apiConfig";
 import { CopyPlus, Calendar, MapPin, AlertCircle, ShieldAlert } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
@@ -39,7 +40,7 @@ export default function Events() {
     setSubmitError("");
     
     try {
-      const response = await fetch('http://localhost:3000/api/events/register', {
+      const response = await fetch(`${API_BASE_URL}/api/events/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
