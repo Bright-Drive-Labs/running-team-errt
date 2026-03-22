@@ -28,7 +28,7 @@ La aplicación web del Escuadrón Rumbero ha evolucionado de un prototipo visual
 ## 🏆 Hitos de Producción (Marzo 2026)
 - **Despliegue Exitoso (V1.0):** Aplicación 100% funcional y disponible en `https://www.escuadronrumbero.com`.
 - **Certificación SSL:** Configuración de HTTPS completa y automática vía Vercel.
-- **Limpieza de Marca:** Eliminación de etiquetas "MVP" en el título de la página.
+- **Limpieza de Marca:** Botón de inscripción configurado como "PRÓXIMAMENTE" para el evento de Junio.
 
 ---
 *Nota de Antigravity: Este es el Front-line de la marca. Mantener la estética premium y la sencillez en el registro de usuarios.*

@@ -275,12 +275,12 @@ export default function Events() {
 
                 <div className="pt-4">
                   <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl mb-6 text-center font-bold text-sm uppercase tracking-wide">
-                    ⚠️ El proceso de inscripción ha finalizado exitosamente. ¡Nos vemos en la ruta!
+                    ⚠️ El proceso de inscripción iniciará pronto. ¡Este gran evento es en Junio!
                   </div>
                   <button type="button" disabled className="w-full bg-slate-400 text-white font-black uppercase tracking-[0.2em] py-5 rounded-xl cursor-not-allowed flex items-center justify-center gap-3">
-                    INSCRIPCIONES CERRADAS
+                    PRÓXIMAMENTE
                   </button>
-                  <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mt-6">Las inscripciones para este evento han llegado a su límite.</p>
+                  <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mt-6">Las inscripciones oficiales para este evento aún no han abierto.</p>
                 </div>
               </form>
             )}
