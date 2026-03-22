@@ -274,10 +274,13 @@ export default function Events() {
                 </div>
 
                 <div className="pt-4">
-                  <button type="submit" disabled={isLoading} className="w-full bg-rumbero-black hover:bg-rumbero-red text-white font-black uppercase tracking-[0.2em] py-5 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_20px_rgba(230,25,43,0.3)] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
-                    {isLoading ? 'GUARDANDO CÓDIGOS DE SEGURIDAD...' : 'SOLICITAR CUPO (GRATUITO)'}
+                  <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl mb-6 text-center font-bold text-sm uppercase tracking-wide">
+                    ⚠️ El proceso de inscripción ha finalizado exitosamente. ¡Nos vemos en la ruta!
+                  </div>
+                  <button type="button" disabled className="w-full bg-slate-400 text-white font-black uppercase tracking-[0.2em] py-5 rounded-xl cursor-not-allowed flex items-center justify-center gap-3">
+                    INSCRIPCIONES CERRADAS
                   </button>
-                  <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mt-6">Tu información viaja cifrada bajo estrictos protocolos B2B.</p>
+                  <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mt-6">Las inscripciones para este evento han llegado a su límite.</p>
                 </div>
               </form>
             )}

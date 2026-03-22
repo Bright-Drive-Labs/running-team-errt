@@ -1,5 +1,5 @@
 # Documento de Contexto y Memoria del Proyecto
-**Escuadrón Rumbero - Official Web Experience (React MVP)**
+**Escuadrón Rumbero - Official Web Experience (React Production)**
 
 ---
 
@@ -8,7 +8,9 @@ La aplicación web del Escuadrón Rumbero ha evolucionado de un prototipo visual
 
 ### Tecnologías Clave
 - **Frontend:** React + Vite + TailwindCSS.
-- **Backend Conectado:** Fastify Local -> Railway (Pendiente).
+- **Infraestructura Cloud:** Backend en **Railway**, Frontend en **Vercel**.
+- **Dominio Principal:** `escuadronrumbero.com`.
+
 - **Control de Versiones:** GitHub repo oficial `running-team-errt`.
 
 ---
@@ -23,10 +25,10 @@ La aplicación web del Escuadrón Rumbero ha evolucionado de un prototipo visual
 
 ---
 
-## 🚀 Próximos Pasos (Fase de Lanzamiento)
-- **Despliegue Railway:** Mover el Backend de la laptop a un servidor en la nube.
-- **Registro en Hostinger:** Compra del dominio `escuadronrumbero.com` y configuración de DNS para habilitar correos masivos.
-- **Integración Garmin/TP:** Siguiente etapa para el "Portal de Atletas" VIP.
+## 🏆 Hitos de Producción (Marzo 2026)
+- **Despliegue Exitoso (V1.0):** Aplicación 100% funcional y disponible en `https://www.escuadronrumbero.com`.
+- **Certificación SSL:** Configuración de HTTPS completa y automática vía Vercel.
+- **Limpieza de Marca:** Eliminación de etiquetas "MVP" en el título de la página.
 
 ---
 *Nota de Antigravity: Este es el Front-line de la marca. Mantener la estética premium y la sencillez en el registro de usuarios.*
