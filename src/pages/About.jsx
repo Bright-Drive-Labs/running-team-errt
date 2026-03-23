@@ -39,7 +39,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-20">
           {/* Text Content */}
           <div className="w-full md:w-1/2">
-            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter italic mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter italic mb-6">
               Nuestra <span className="text-rumbero-red">Historia</span>
             </h1>
             <p className="text-slate-400 text-xl md:text-2xl leading-relaxed">

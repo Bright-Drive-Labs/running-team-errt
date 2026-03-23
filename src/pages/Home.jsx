@@ -22,7 +22,7 @@ export default function Home() {
           <div className="inline-block bg-rumbero-red text-white px-4 py-1 mb-6 font-black uppercase text-xs tracking-[0.3em] italic">
             Desde 2022
           </div>
-          <h1 className="text-white text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter uppercase mb-6 italic">
+          <h1 className="text-white text-4xl sm:text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter uppercase mb-6 italic">
             Más que <br /> <span className="text-rumbero-red">un equipo</span>
           </h1>
           <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto mb-10">
