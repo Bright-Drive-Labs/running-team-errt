@@ -1,5 +1,5 @@
 # 🧠 Memoria Temporal - Telegram Commander (Phase 2 & 3)
-**Actualizado: 12 de Abril, 2026**
+**Última Actualización: 13 de Abril, 2026**
 
 Este documento sirve como puente de contexto para que cualquier instancia de IA (Gemini/Claude) entienda el estado actual del "Super Agente de Entrenamiento".
 
@@ -7,34 +7,32 @@ Este documento sirve como puente de contexto para que cualquier instancia de IA 
 
 ## 🛠️ Estado Técnico Actual
 1. **Brain Switch (IA):**
-   - Se eliminó la dependencia de `Google Gemini API` (por inestabilidad/vencimiento de tokens).
-   - Se integró **Groq (Llama 3.3 70B Versatile)**. Es ultra rápido (<1s) y procesa el lenguaje natural del Coach para extraer JSONs con la intención de entrenamiento y audiencia.
+   - **Few-Shot Prompting Rigid:** Se refactorizó el prompt del sistema para usar una estructura de "Pocos Ejemplos" (Few-Shot). Esto garantiza que la IA respete **estricta y obligatoriamente** los dobles saltos de línea entre bloques de entrenamiento exigidos por Garmin/Intervals.icu.
+   - **Extracción de Notas:** Se separaron técnicamente el `workout_markdown` (instrucciones mecánicas) de las `coach_notes` (motivación y técnica). Ambas se sincronizan ahora juntas pero sin mezclarse.
 
-2. **Memoria de Conversación (Short-term):**
-   - El bot ahora tiene una `sessionState` (Map). 
-   - **Lógica:** Si el Coach envía un entrenamiento pero olvida decir para quién es, el Bot guarda los datos técnicos en RAM y espera el nombre del Atleta. Al recibirlo, concatena ambos mensajes para no perder la serie.
+2. **Frontend - Portal del Atleta (Vite + React):**
+   - **Renderizado de Notas:** Se actualizó `AthletePortal.jsx` para mostrar un bloque de "Notas del Coach" con estilo propio (rojo racing, cursiva).
+   - **Sincronización Manual:** Se corrigió el botón "Sincronizar Garmin" para que envíe el paquete completo (Nombre, Markdown y las Notas) evitando errores de "Name is required".
 
 3. **Arquitectura Multi-Tenant (Supabase):**
-   - Se crearon las tablas `teams` y `athletes`.
-   - **Seed Hack:** El Tenant principal (Escuadrón Rumbero) tiene el ID `11111111-1111-1111-1111-111111111111`.
-   - Los atletas ahora tienen campos para `intervals_athlete_id` e `intervals_api_key` protegidos por RLS.
+   - Las llaves de Intervals.icu se buscan dinámicamente según el `target_audience`.
+   - Soporte para atletas individuales (`Daniel Perez`) con mapping automático de IDs.
 
 4. **Integración con Intervals.icu (Push de Datos):**
-   - Módulo: `src/agents/intervals-api.ts`.
-   - **Sincronización REAL:** Al presionar el botón "SÍ, PUSH", el bot busca al atleta en Supabase, extrae sus llaves, y envía un POST a la API de Intervals agendando el entrenamiento para el día de mañana.
+   - **Fix de Fecha (Java Parser):** Se ajustó el formato de `start_date_local` agregando un timestamp simulado (`T08:00:00`) para evitar el error `422` del servidor Java de Intervals.icu.
 
 ---
 
 ## 🛡️ Notas de Seguridad
 - Se ha incluido `setup_database.sql` en el `.gitignore`. **NUNCA** subir este archivo con semillas de IDs reales a GitHub.
-- Las llaves de Groq y Supabase se manejan estrictamente por el `.env`.
+- Todas las credenciales críticas viven en el `.env`.
 
 ---
 
 ## 🚀 Próximos Pasos (Hoja de Ruta)
-- **Speech-to-Text:** Integrar Whisper o similar para que "Oye, ponle a Daniel una serie de 400m" funcione por audio.
-- **Validación de Grupos:** Implementar la lógica para que `target_audience: GROUP: Avanzados` funcione enviando el push a 30 atletas al mismo tiempo.
-- **Refactorización de UI:** Crear un dashboard web para que el Coach vea los "Push realizados" visualmente.
+- **Speech-to-Text (PROX):** Integración de OpenAI Whisper para que el Coach envíe entrenamientos por nota de voz.
+- **Push por Grupos:** Lógica para que `GROUP: Avanzados` envíe el push a múltiples atletas en una sola ráfaga.
+- **Dashboard de Historial:** Dashboard visual para que el Coach rastree qué entrenamientos han sido "empujados" al reloj de cada atleta.
 
 ---
 *Antigravity IA Assistant: Entregando el mando a la siguiente instancia.*

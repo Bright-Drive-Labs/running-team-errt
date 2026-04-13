@@ -124,6 +124,68 @@ export default function AthletePortal() {
     setPendingWorkouts([]);
   };
 
+  const handleArchiveWorkout = async (workoutId) => {
+    try {
+      const { error } = await supabase
+        .from('workout_assignments')
+        .update({ status: 'ARCHIVED' })
+        .eq('id', workoutId);
+      
+      if (!error) {
+        setPendingWorkouts(prev => prev.filter(w => w.id !== workoutId));
+      } else {
+        alert("Error al archivar: " + error.message);
+      }
+    } catch (err) {
+      alert("Error de conexión");
+    }
+  };
+
+  const handleSyncGarmin = async (workout) => {
+    if (!athlete.intervals_athlete_id || !athlete.intervals_api_key) {
+      alert("⚠️ Error: No tienes configurado tu ID o API Key de Intervals.icu.");
+      return;
+    }
+
+    setProcessingId(workout.id);
+    try {
+      // Usamos btoa para Basic Auth (estándar de Intervals.icu)
+      const auth = btoa(`API_KEY:${athlete.intervals_api_key}`);
+      
+      const payload = {
+        category: "WORKOUT",
+        start_date_local: `${workout.target_date}T08:00:00`,
+        type: "Run",
+        name: workout.workout_name,
+        description: workout.coach_notes 
+          ? `${workout.markdown_payload.replace(/\\n/g, '\n')}\n\n---\n📝 NOTAS DEL COACH:\n${workout.coach_notes}`
+          : workout.markdown_payload.replace(/\\n/g, '\n')
+      };
+
+      const response = await fetch(`https://intervals.icu/api/v1/athlete/${athlete.intervals_athlete_id}/events`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert("🚀 ¡ÉXITO! Entrenamiento enviado a Intervals.icu. Abre tu app de Garmin Connect para sincronizar el reloj.");
+        // Opcional: Marcar como sincronizado en Supabase si quieres
+      } else {
+        const errorData = await response.json();
+        alert("❌ Error de API: " + (errorData.error || "No se pudo sincronizar"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error de conexión con Intervals.icu");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <Loader2 className="w-12 h-12 animate-spin text-racing-red" />
@@ -259,21 +321,28 @@ export default function AthletePortal() {
                       transition={{ delay: idx * 0.1 }}
                       className="glass-card overflow-hidden border-l-8 border-racing-red p-10 hover:shadow-2xl hover:shadow-racing-red/10 transition-all duration-500 group"
                     >
-                      <div className="flex justify-between items-start mb-8">
-                         <div>
-                           <div className="flex items-center gap-2 mb-2">
-                             <div className="w-2 h-2 rounded-full bg-racing-red animate-ping" />
-                             <span className="text-racing-red font-black text-[10px] tracking-[0.4em] uppercase">{w.workout_name.split(':')[0] || "PROYECTO"}</span>
-                           </div>
-                           <h2 className="lexend-title text-4xl lg:text-5xl font-black tracking-tighter uppercase group-hover:text-racing-red transition-colors duration-500">
-                             {w.workout_name.includes(':') ? w.workout_name.split(':')[1] : w.workout_name}
-                           </h2>
-                           <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-3">
-                             <Calendar className="w-3 h-3 text-racing-red" />
-                             {new Date(w.target_date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                           </p>
-                         </div>
-                      </div>
+                        <div className="flex justify-between items-start mb-8">
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-2 h-2 rounded-full bg-racing-red animate-ping" />
+                              <span className="text-racing-red font-black text-[10px] tracking-[0.4em] uppercase">{w.workout_name.split(':')[0] || "PROYECTO"}</span>
+                            </div>
+                            <h2 className="lexend-title text-4xl lg:text-5xl font-black tracking-tighter uppercase group-hover:text-racing-red transition-colors duration-500">
+                              {w.workout_name.includes(':') ? w.workout_name.split(':')[1] : w.workout_name}
+                            </h2>
+                            <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-3">
+                              <Calendar className="w-3 h-3 text-racing-red" />
+                              {new Date(w.target_date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => handleArchiveWorkout(w.id)}
+                            className="text-white/10 hover:text-racing-red transition-colors p-2"
+                            title="Archivar entrenamiento"
+                          >
+                            <XCircle className="w-6 h-6" />
+                          </button>
+                        </div>
                       
                       <div className="monolith-code mb-10 text-white/60 p-6 bg-black/50 rounded border border-white/5 font-mono text-sm leading-relaxed max-h-60 overflow-y-auto whitespace-pre-wrap">
                         {w.markdown_payload.split('\\n').map((line, i) => (
@@ -281,9 +350,26 @@ export default function AthletePortal() {
                         ))}
                       </div>
 
+                      {w.coach_notes && (
+                        <div className="mb-10 p-6 bg-racing-red/5 border-l-2 border-racing-red rounded-r-sm">
+                          <p className="text-racing-red font-black text-[10px] uppercase tracking-widest mb-2">Notas del Coach</p>
+                          <p className="text-sm text-white/70 italic leading-relaxed">
+                            "{w.coach_notes}"
+                          </p>
+                        </div>
+                      )}
+
                       <div className="flex flex-col sm:flex-row gap-6">
-                        <button className="bg-white text-black hover:bg-racing-red hover:text-white flex-[2] py-6 font-black uppercase text-xs tracking-widest transition-all shadow-xl">
-                          Sincronizar Garmin
+                        <button 
+                          onClick={() => handleSyncGarmin(w)}
+                          disabled={processingId === w.id}
+                          className="bg-white text-black hover:bg-racing-red hover:text-white flex-[2] py-6 font-black uppercase text-xs tracking-widest transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                        >
+                          {processingId === w.id ? (
+                            <>Sincronizando... <Loader2 className="w-4 h-4 animate-spin" /></>
+                          ) : (
+                            'Sincronizar Garmin'
+                          )}
                         </button>
                         <button className="bg-transparent border border-white/10 hover:border-white/40 flex-1 py-6 font-black uppercase text-[10px] tracking-widest transition-all text-white/40 hover:text-white">
                           Detalles
