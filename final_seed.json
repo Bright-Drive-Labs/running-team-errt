@@ -1,0 +1,18 @@
+[
+  {
+    "athlete_id": "a001d942-3eae-4810-a200-94139bf9009a",
+    "workout_name": "VELOCIDAD: 8x400m Explosivos",
+    "target_date": "2026-04-13T12:00:00Z",
+    "status": "PENDING",
+    "coach_notes": "Ritmo constante. Recuperación 1:30.",
+    "markdown_payload": "- 15m Warmup\n- 8x 400m Z5\n- 10m Cooldown"
+  },
+  {
+    "athlete_id": "a001d942-3eae-4810-a200-94139bf9009a",
+    "workout_name": "BASE: Rodaje Suave",
+    "target_date": "2026-04-14T12:00:00Z",
+    "status": "PENDING",
+    "coach_notes": "Zona 2 estricta.",
+    "markdown_payload": "- 45m Z2"
+  }
+]

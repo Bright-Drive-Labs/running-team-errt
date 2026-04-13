@@ -1,29 +1,61 @@
 @import "tailwindcss";
 
 @theme {
-  --color-rumbero-red: #E6192B;
-  --color-rumbero-black: #111111;
-  --color-rumbero-white: #FFFFFF;
-
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Oswald', system-ui, sans-serif;
+  --color-racing-red: #f20d0d;
+  --color-deep-black: #131313;
+  --color-monolith-gray: #1c1b1b;
+  --color-surface-high: #2a2a2a;
+  
+  --font-lexend: 'Lexend', sans-serif;
+  --font-inter: 'Inter', sans-serif;
 }
 
 @layer base {
   :root {
-    --background: #FFFFFF;
-    --foreground: #111111;
+    --background: #131313;
+    --foreground: #e5e2e1;
   }
   
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-inter);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
   
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+  h1, h2, h3, h4, .lexend-title {
+    font-family: var(--font-lexend);
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
   }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.monolith-code {
+  background: #0e0e0e;
+  border-left: 4px solid #f20d0d;
+  padding: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  box-shadow: 0 0 20px rgba(242, 13, 13, 0.1);
+}
+
+.btn-racing {
+  background: linear-gradient(135deg, #f20d0d 0%, #c00004 100%);
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.btn-racing:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(242, 13, 13, 0.3);
 }

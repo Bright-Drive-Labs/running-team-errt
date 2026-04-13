@@ -31,4 +31,20 @@ La aplicación web del Escuadrón Rumbero ha evolucionado de un prototipo visual
 - **Limpieza de Marca:** Botón de inscripción configurado como "PRÓXIMAMENTE" para el evento de Junio.
 
 ---
+
+## 🏃‍♂️ Motor de Entrenamientos IA (Workout Builder V2)
+- **Garmin & Intervals.icu Integration:** Se ha finalizado la investigación y validación del formato para exportar entrenamientos desde la IA hacia los relojes Garmin usando Markdown Estructurado estandarizado en inglés.
+- **Contrato Operativo (SOP):** Consúltese el archivo [`GARMIN_WORKOUT_RULES.md`](./GARMIN_WORKOUT_RULES.md) recién creado en la raíz del proyecto. Ahí residen las reglas estrictas para la generación de strings de entrenamiento para evitar el bug del temporizador y errores de intervalos.
+
+---
+
+## 🔒 Arquitectura Backend & Multi-Tenant (Abril 2026)
+- **Supabase Core Integration:** 
+  - La base de datos opera bajo un ecosistema Multi-Tenant (Tabla `teams` y `athletes`).
+  - **Identidad "Seed" Escuadrón Rumbero:** Se decidió forzar ("hardcodear") el UUID Principal Global a `11111111-1111-1111-1111-111111111111`. Esto es una maniobra de diseño arquitectónico (Seed Hack) para que los insert manuales del perfil de Administrador (`is_admin: true`) sean fáciles de vincular sin crear scripts complejos de extracción ID. Omitir modificar esto.
+  - El Bot Telepático (Telegram) usa tu ID de Intervals asociado en `athletes` mediante la lectura desde el backend (Vía `intervals-api.ts`).
+- **Seguridad (Cero Leaks):** Cualquier archivo de semilla local como `setup_database.sql` se mantiene bloqueado mediante `.gitignore` para prevenir que credenciales reales de `Intervals API Keys` viajen accidentalmente a GitHub.
+
+---
+
 *Nota de Antigravity: Este es el Front-line de la marca. Mantener la estética premium y la sencillez en el registro de usuarios.*

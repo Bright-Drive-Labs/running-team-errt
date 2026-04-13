@@ -9,15 +9,16 @@ export default function Navbar() {
 
   const navLinks = [
     { to: '/', label: 'Inicio' },
-    { to: '/about', label: 'Sobre Nosotros' },
-    { to: '/training', label: 'Entrenamientos' },
+    { to: '/about', label: 'Nosotros' },
+    { to: '/training', label: 'Entrenos' },
+    { to: '/portal', label: 'Portal' },
     { to: '/events', label: 'Eventos' },
     { to: '/gallery', label: 'Galería' },
     { to: '/contact', label: 'Contacto' },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-rumbero-black/90 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-deep-black/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3" onClick={closeMenu}>
@@ -34,7 +35,7 @@ export default function Navbar() {
             <Link
               key={link.to}
               to={link.to}
-              className="text-slate-400 hover:text-rumbero-red transition-colors text-sm font-bold uppercase tracking-widest"
+              className="text-slate-400 hover:text-racing-red transition-colors text-sm font-bold uppercase tracking-widest"
             >
               {link.label}
             </Link>
@@ -44,7 +45,7 @@ export default function Navbar() {
         {/* Desktop CTA Button */}
         <Link
           to="/contact"
-          className="hidden lg:inline-block bg-rumbero-red hover:bg-red-700 text-white px-8 py-3 rounded font-black text-sm uppercase tracking-tighter transition-all hover:scale-105 active:scale-95"
+          className="hidden lg:inline-block bg-racing-red hover:bg-red-700 text-white px-8 py-3 rounded font-black text-sm uppercase tracking-tighter transition-all hover:scale-105 active:scale-95"
         >
           Únete al Equipo
         </Link>
