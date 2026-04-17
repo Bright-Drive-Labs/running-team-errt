@@ -1,0 +1,10 @@
+id,tenant_id,athlete_id,coach_id,workout_name,target_date,markdown_payload,coach_notes,status,created_at
+46fbb639-796b-4169-8d70-2cc15eaa00a2,11111111-1111-1111-1111-111111111111,a001d942-3eae-4810-a200-94139bf9009a,a001d942-3eae-4810-a200-94139bf9009a,6x600m Progresivos Controlados,2026-04-14,"Warmup
+- Warmup 20m 8:01-6:37 pace intensity=warmup
+
+6x
+- Run 0.6km 5:00 pace intensity=interval
+- Recover 90s intensity=recovery
+
+Cooldown
+- Cooldown 5m 6:37-8:01 pace intensity=cooldown","Sesión enfocada en el control del esfuerzo y progresión de ritmos. No salir fuerte en la primera serie, construir el ritmo de forma gradual hasta cerrar con intensidad.",PENDING,2026-04-14 19:15:51.839049+00

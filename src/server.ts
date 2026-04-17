@@ -11,6 +11,7 @@ import { requireTelegramAuth, CoachRequest } from './middleware/validateTelegram
 import { logAction, logWorkoutPush, logAthleteLogin, logAthleteDataSync } from './utils/auditLog';
 import { createIntervalsWorkout } from './lib/intervals-api';
 import registerTelegramEndpoints from './handlers/fastifyTelegramEndpoints';
+import { initTelegramBot, launchTelegramBot, getTelegramWebhookHandler } from './handlers/telegramBot';
 import { isRateLimited, getRemaining, getResetTime } from './middleware/rateLimiter';
 import { validateGarminWorkout, generateValidationReport } from './utils/garminValidator';
 
@@ -786,6 +787,27 @@ export async function startServer(port: number = 3000) {
     - GET  /api/telegram/* (telegram protected)
     - POST /api/telegram/* (telegram protected)
     `);
+
+    // ============================================
+    // INITIALIZE & LAUNCH TELEGRAM BOT
+    // ============================================
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (telegramToken) {
+      try {
+        console.log('🤖 Initializing Telegram Bot...');
+        const bot = initTelegramBot(telegramToken);
+
+        // Launch bot (polling mode)
+        await launchTelegramBot(bot);
+
+        console.log('✅ Telegram Bot online and listening for messages');
+      } catch (botErr) {
+        console.error('⚠️ Telegram Bot initialization failed:', botErr);
+        console.error('Continuing without Telegram bot...');
+      }
+    } else {
+      console.warn('⚠️ TELEGRAM_BOT_TOKEN not set, bot disabled');
+    }
 
     return fastify;
 

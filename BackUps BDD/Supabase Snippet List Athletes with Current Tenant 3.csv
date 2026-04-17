@@ -1,0 +1,17 @@
+id,name,email,tenant_id,is_admin,telegram_user_id,intervals_athlete_id,intervals_api_key_encrypted,first_name,last_name,phone,created_at
+a001d942-3eae-4810-a200-94139bf9009a,Daniel Perez,dpinfosys@gmail.com,11111111-1111-1111-1111-111111111111,true,7481658837,i552473,55b04aa3-ec44-4d21-b5fe-1816a7472a89,Daniel,Perez,+7134464595,2026-04-12 16:22:02.507664+00
+3f8357f6-2c8e-44e2-a99a-e4aec983388a,Samuel Contreras,sjcb1969@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Samuel,Contreras,4,2026-04-14 16:21:31.385497+00
+1808eb14-e39a-4f59-aae6-e5712d133bf0,Jeanneiry Rodriguez,jeanneiryrc@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Jeanneiry,Rodriguez,,2026-04-14 16:21:31.385497+00
+7e84509e-51ca-476d-a89f-da436890c976,Eddinth Herrera,eddinth1886@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Eddinth,Herrera,,2026-04-14 16:21:31.385497+00
+064b8cc3-1493-41cd-9750-a2ac713e4ea7,Miridedsi Meza,mezamiridedsi@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Miridedsi,Meza,,2026-04-14 16:21:31.385497+00
+6150790a-3008-41ca-96bc-ae56b42eaf73,Daniela Herrera,danielahea@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Daniela,Herrera,,2026-04-14 16:21:31.385497+00
+ac705f31-2df4-48ec-8ebe-d262707d613f,Biam Blanco,bjbmblanco@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Biam,Blanco,,2026-04-14 16:21:31.385497+00
+c04046b9-687b-4682-ad15-5bb2420479e7,Yosleidi Duarte,yojoduza@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Yosleidi,Duarte,,2026-04-14 16:21:31.385497+00
+432cd6fc-6b38-4026-98b6-61b93efd4812,Joanna Rodulfo,joannarodulfo79@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Joanna,Rodulfo,,2026-04-14 16:21:31.385497+00
+f804fd6f-1636-418e-b684-2092c69397fb,Maryori Alcala,i.alcalamaryori@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Maryori,Alcala,,2026-04-14 16:21:31.385497+00
+c83e3173-1ccc-4953-9eca-fdda006d9188,Alfredo Orta,alfredoorta11@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Alfredo,Orta,,2026-04-14 16:21:31.385497+00
+44d6e76c-ef00-4789-a02f-7c94fc235618,Deisy Oca,deisycarolina8@hotmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Deisy,Oca,,2026-04-14 16:21:31.385497+00
+bade9a07-2069-41dc-898c-8034815a66a8,Nairobis Torres,jnairobisdeortiz@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Nairobis,Torres,,2026-04-14 16:21:31.385497+00
+032c926e-de70-4b13-9fc1-e51fcd2f8ab0,Krizia Duran,kriziaduran2303@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Krizia,Duran,,2026-04-14 16:21:31.385497+00
+a85265ae-2317-4751-abb6-3b9149686891,Nexis Fuentes,nexis.fuentes@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Nexis,Fuentes,,2026-04-14 16:21:31.385497+00
+3cb3018f-c572-4944-b39e-6eeb860c79b5,Daniel Colmenares,dcolmenares723@gmail.com,11111111-1111-1111-1111-111111111111,false,null,null,null,Daniel,Colmenares,,2026-04-14 16:21:31.385497+00

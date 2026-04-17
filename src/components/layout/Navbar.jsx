@@ -11,10 +11,10 @@ export default function Navbar() {
     { to: '/', label: 'Inicio' },
     { to: '/about', label: 'Nosotros' },
     { to: '/training', label: 'Entrenos' },
-    { to: '/portal', label: 'Portal' },
     { to: '/events', label: 'Eventos' },
     { to: '/gallery', label: 'Galería' },
     { to: '/contact', label: 'Contacto' },
+    { to: '/portal', label: 'Portal' },
   ];
 
   return (

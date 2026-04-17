@@ -1,0 +1,381 @@
+================================================================================
+AUDIT LOGS SCHEMA - Visual Overview
+================================================================================
+
+DATABASE RELATIONSHIPS
+======================
+
+teams (existing table)
+│
+├─ id (UUID) PRIMARY KEY
+├─ name VARCHAR
+└─ ... other columns
+
+       │
+       │ FOREIGN KEY (ON DELETE CASCADE)
+       │
+       └──────────────────────────────┐
+                                      │
+audit_logs (NEW TABLE)                │
+│                                     │
+├─ id (UUID) PRIMARY KEY              │
+├─ action VARCHAR(50) ─────┐          │
+├─ entity_type VARCHAR(50) │          │
+├─ entity_id UUID          │ WHAT?    │
+├─ actor_id VARCHAR(100)   │          │
+├─ actor_type VARCHAR(50)  ├──────────┤ WHO?
+├─ actor_name VARCHAR(150) │          │
+├─ created_at TIMESTAMP ───┤ WHEN?    │
+├─ before_values JSONB ────┤ WHY? (changelog)
+├─ after_values JSONB ─────┤          │
+├─ status VARCHAR(20) ─────┤ RESULT?  │
+├─ error_message TEXT ─────┤          │
+│                          │          │
+└─ tenant_id (UUID) ──────────────────┘
+   FOREIGN KEY
+   NOT NULL
+   (CRITICAL FOR RLS)
+
+
+================================================================================
+TABLE: audit_logs
+================================================================================
+
+Column Name        | Type                 | Constraints        | Purpose
+───────────────────┼──────────────────────┼────────────────────┼─────────────────────
+id                 | UUID                 | PRIMARY KEY        | Unique log identifier
+action             | VARCHAR(50)          | NOT NULL           | 'WORKOUT_PUSHED'
+entity_type        | VARCHAR(50)          | NOT NULL           | 'workout', 'athlete'
+entity_id          | UUID                 | OPTIONAL           | ID of affected object
+actor_id           | VARCHAR(100)         | NOT NULL           | 'telegram:123456'
+actor_type         | VARCHAR(50)          | NOT NULL           | 'TELEGRAM_BOT'
+actor_name         | VARCHAR(150)         | OPTIONAL           | 'Daniel Pérez'
+created_at         | TIMESTAMP WITH TZ    | DEFAULT NOW()      | When happened (UTC)
+before_values      | JSONB                | OPTIONAL           | State before
+after_values       | JSONB                | OPTIONAL           | State after
+status             | VARCHAR(20)          | NOT NULL           | 'SUCCESS', 'FAILED'
+error_message      | TEXT                 | OPTIONAL           | Error if FAILED
+tenant_id          | UUID                 | NOT NULL, FK       | CRITICAL for RLS
+
+
+================================================================================
+INDEXES (7 TOTAL)
+================================================================================
+
+Index Name                  | Columns                      | Use Case
+────────────────────────────┼──────────────────────────────┼──────────────────────
+idx_audit_tenant            | tenant_id                    | RLS filtering base
+idx_audit_timestamp         | created_at DESC              | Recent actions
+idx_audit_actor             | actor_id                     | "Who did what"
+idx_audit_action_tenant     | action, tenant_id            | Team action history
+idx_audit_status            | status                       | Error tracking
+idx_audit_tenant_timestamp  | tenant_id, created_at DESC   | Recent team activity
+idx_audit_entity            | entity_type, entity_id       | Resource history
+
+
+PERFORMANCE ESTIMATES:
+  idx_audit_tenant_timestamp    ~10ms  (combined query optimization)
+  idx_audit_status             ~50ms  (find all failures)
+  idx_audit_actor             ~100ms  (actor history)
+  idx_audit_entity             ~20ms  (resource change history)
+  Sequential scan            >1000ms  (AVOID)
+
+
+================================================================================
+ROW LEVEL SECURITY (RLS)
+================================================================================
+
+POLICY 1: "Logs visible only to own tenant" [SELECT]
+─────────────────────────────────────────────────────────
+
+  ┌─── Coach from ERRT team (auth.uid() = athlete_123)
+  │       │
+  │       └─→ Query: SELECT * FROM audit_logs
+  │             │
+  │             └─→ RLS checks:
+  │                   tenant_id = (SELECT tenant_id FROM athletes WHERE id = 'athlete_123')
+  │                   │
+  │                   ├─→ athlete_123.tenant_id = 'errt-team-uuid'
+  │                   │
+  │                   └─→ Result: Only audit_logs where tenant_id = 'errt-team-uuid'
+  │
+  └─── Coach from runners58 team (auth.uid() = athlete_456)
+        │
+        └─→ Query: SELECT * FROM audit_logs
+              │
+              └─→ RLS checks:
+                    tenant_id = (SELECT tenant_id FROM athletes WHERE id = 'athlete_456')
+                    │
+                    ├─→ athlete_456.tenant_id = 'runners58-team-uuid'
+                    │
+                    └─→ Result: Only audit_logs where tenant_id = 'runners58-team-uuid'
+
+
+POLICY 2: "Allow system inserts" [INSERT]
+──────────────────────────────────────────
+
+  Backend calling: SELECT log_action(...)
+         │
+         └─→ Function executes INSERT INTO audit_logs
+                 │
+                 └─→ RLS Policy checks:
+                       EXISTS (SELECT 1 FROM teams WHERE id = tenant_id)
+                       │
+                       ├─→ If tenant_id exists in teams → INSERT allowed ✓
+                       │
+                       └─→ If tenant_id doesn't exist → INSERT denied ✗
+
+
+MULTI-TENANT ISOLATION GUARANTEE:
+═════════════════════════════════
+
+  Team A Coach   │   Team B Coach
+      │          │       │
+      │          │       │
+      ├─ RLS ────┤   ├─ RLS ────┐
+      │          │   │          │
+  Team A logs   │   │      Team B logs
+      │          │   │          │
+      └──────────┴───┴──────────┘
+      (No cross-team data visible)
+
+
+================================================================================
+HELPER FUNCTION: log_action()
+================================================================================
+
+FUNCTION SIGNATURE:
+───────────────────
+
+  log_action(
+    p_tenant_id UUID,                          [REQUIRED]
+    p_action VARCHAR,                          [REQUIRED]
+    p_entity_type VARCHAR,                     [REQUIRED]
+    p_entity_id UUID = NULL,                   [optional]
+    p_actor_id VARCHAR = 'SYSTEM',             [optional]
+    p_actor_type VARCHAR = 'SYSTEM',           [optional]
+    p_actor_name VARCHAR = 'System Process',   [optional]
+    p_before_values JSONB = NULL,              [optional]
+    p_after_values JSONB = NULL,               [optional]
+    p_status VARCHAR = 'SUCCESS',              [optional]
+    p_error_message TEXT = NULL                [optional]
+  ) RETURNS UUID
+
+
+EXECUTION FLOW:
+───────────────
+
+  SELECT log_action(...)
+        │
+        ├─→ [1] Validate tenant_id exists in teams
+        │       ├─→ VALID   → Continue
+        │       └─→ INVALID → RAISE EXCEPTION
+        │
+        ├─→ [2] Validate action not null/empty
+        │       ├─→ VALID   → Continue
+        │       └─→ INVALID → RAISE EXCEPTION
+        │
+        ├─→ [3] Validate entity_type not null/empty
+        │       ├─→ VALID   → Continue
+        │       └─→ INVALID → RAISE EXCEPTION
+        │
+        ├─→ [4] INSERT INTO audit_logs
+        │       └─→ RLS Policy "Allow system inserts" checks
+        │           └─→ Is tenant_id in teams? YES → INSERT
+        │
+        └─→ [5] RETURN log_id (UUID)
+
+
+USAGE EXAMPLES:
+───────────────
+
+  -- Simple success log
+  SELECT log_action(
+    'team-uuid'::UUID,
+    'ATHLETE_LOGIN',
+    'athlete',
+    'athlete-uuid'::UUID,
+    'user:123',
+    'FRONTEND',
+    'Mobile App'
+  );
+  → Returns: UUID of created log
+
+  -- Detailed log with before/after
+  SELECT log_action(
+    'team-uuid'::UUID,
+    'WORKOUT_PUSHED',
+    'workout',
+    'workout-uuid'::UUID,
+    'telegram:123456',
+    'TELEGRAM_BOT',
+    'Bot Handler',
+    NULL,  -- before (no previous state)
+    '{"name": "5x1km", "status": "published"}'::JSONB,  -- after
+    'SUCCESS',
+    NULL
+  );
+  → Returns: UUID of created log
+
+  -- Failed action with error
+  SELECT log_action(
+    'team-uuid'::UUID,
+    'ATHLETE_LOGIN',
+    'athlete',
+    'athlete-uuid'::UUID,
+    'user:999',
+    'FRONTEND',
+    'Web App',
+    NULL,
+    NULL,
+    'FAILED',
+    'Invalid credentials - password mismatch'
+  );
+  → Returns: UUID of created log
+
+
+================================================================================
+QUERY PATTERNS
+================================================================================
+
+PATTERN 1: Recent team actions (Dashboard)
+───────────────────────────────────────────
+
+  SELECT action, actor_name, status, created_at
+  FROM audit_logs
+  WHERE tenant_id = 'current-team-uuid'::UUID
+  ORDER BY created_at DESC
+  LIMIT 20;
+
+  Index used: idx_audit_tenant_timestamp
+  Performance: ~10ms
+
+
+PATTERN 2: Find failed actions (Error tracking)
+────────────────────────────────────────────────
+
+  SELECT action, error_message, actor_name, created_at
+  FROM audit_logs
+  WHERE tenant_id = 'current-team-uuid'::UUID
+    AND status = 'FAILED'
+  ORDER BY created_at DESC;
+
+  Index used: idx_audit_status + idx_audit_tenant
+  Performance: ~50ms
+
+
+PATTERN 3: Track specific action type
+──────────────────────────────────────
+
+  SELECT actor_name, entity_id, after_values, created_at
+  FROM audit_logs
+  WHERE tenant_id = 'current-team-uuid'::UUID
+    AND action = 'WORKOUT_PUSHED'
+  ORDER BY created_at DESC
+  LIMIT 100;
+
+  Index used: idx_audit_action_tenant
+  Performance: ~20ms
+
+
+PATTERN 4: Resource change history
+──────────────────────────────────
+
+  SELECT action, actor_name, before_values, after_values, created_at
+  FROM audit_logs
+  WHERE tenant_id = 'current-team-uuid'::UUID
+    AND entity_type = 'athlete'
+    AND entity_id = 'athlete-uuid'::UUID
+  ORDER BY created_at;
+
+  Index used: idx_audit_entity
+  Performance: ~20ms
+
+
+PATTERN 5: Actor activity
+──────────────────────────
+
+  SELECT action, entity_type, status, created_at
+  FROM audit_logs
+  WHERE tenant_id = 'current-team-uuid'::UUID
+    AND actor_id = 'telegram:123456'
+  ORDER BY created_at DESC;
+
+  Index used: idx_audit_actor
+  Performance: ~100ms
+
+
+================================================================================
+SECURITY MATRIX
+================================================================================
+
+                  │ Coach ERRT │ Coach R58 │ Admin │ Backend
+──────────────────┼────────────┼───────────┼───────┼─────────
+SELECT own logs   │     ✓      │     ✓     │  ✓   │   ✓
+SELECT other logs │     ✗      │     ✗     │  ✓   │   ✓
+INSERT logs       │     ✗      │     ✗     │  ✓   │   ✓
+UPDATE logs       │     ✗      │     ✗     │  ✗   │   ✗
+DELETE logs       │     ✗      │     ✗     │  ✗   │   ✗
+
+(✓ = allowed by RLS, ✗ = denied by RLS)
+
+Multi-tenant isolation: ENFORCED AT DATABASE LEVEL (not app layer)
+
+
+================================================================================
+DATA RETENTION & LIFECYCLE
+================================================================================
+
+Log Entry Creation:
+  ↓
+[Active in audit_logs table]
+  ↓
+[Searchable for 1-2 years]
+  ↓
+[Optional archival to cold storage]
+  ↓
+[Deleted on CASCADE if team deleted]
+
+ON DELETE CASCADE policy:
+  DELETE FROM teams WHERE id = 'team-uuid'
+    ↓
+    └─→ Automatically deletes ALL logs WHERE tenant_id = 'team-uuid'
+        (Prevents orphaned logs in production)
+
+
+================================================================================
+GRANT PERMISSIONS
+================================================================================
+
+GRANT SELECT ON audit_logs TO authenticated;
+  → Coaches can query (RLS filters to own tenant)
+
+GRANT INSERT ON audit_logs TO service_role;
+  → Backend can insert logs
+
+GRANT SELECT ON audit_logs TO anon;
+  → Optional (RLS restricts anyway)
+
+GRANT EXECUTE ON FUNCTION log_action(...) TO authenticated, service_role;
+  → Both coaches and backend can call the helper function
+
+
+================================================================================
+PRODUCTION MONITORING
+================================================================================
+
+KEY METRICS TO TRACK:
+  1. Table size growth (bytes/month)
+  2. Query response times by pattern
+  3. Index hit ratio (cache efficiency)
+  4. Failed action ratio (FAILED status count)
+  5. Error messages (find patterns)
+  6. Peak query load times
+
+ALERTING:
+  - High volume of FAILED actions (potential security issue)
+  - Unusual actor patterns (suspicious account activity)
+  - Query response times > 1 second (index degradation)
+  - Table size growth rate (storage planning)
+
+================================================================================

@@ -1,0 +1,368 @@
+================================================================================
+  BRIGHT DRIVE ERRT - VAULT ENCRYPTION ARCHITECTURE
+  SQL Specialist Delivery - April 15, 2026
+================================================================================
+
+1. HIGH-LEVEL DATA FLOW
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ COACH / ATHLETE (Frontend - React)                                       │
+│ - Wants to connect Intervals.icu account                                │
+│ - Inputs API Key in form                                                │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             │ HTTPS POST
+                             │ /api/athletes/:id/intervals/connect
+                             │ {apiKey: "353s8jyj62zdo4jkc2sfvfhwi"}
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BACKEND API (Node.js with service_role)                                 │
+│                                                                          │
+│  app.post('/api/athletes/:id/intervals/connect', async (req, res) => {  │
+│    const apiKey = req.body.apiKey;                                      │
+│    const athleteId = req.params.id;                                     │
+│    const tenantId = req.user.tenantId;                                  │
+│                                                                          │
+│    // Call Supabase RPC with service_role                              │
+│    const { data, error } = await supabaseAdmin.rpc(                     │
+│      'store_intervals_key',                                             │
+│      { p_athlete_id: athleteId, ... }                                  │
+│    );                                                                    │
+│  })                                                                      │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             │ service_role JWT
+                             │ (backend only - SECRET!)
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SUPABASE (PostgreSQL + Vault)                                            │
+│                                                                          │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ DATABASE: public.athletes                                          │ │
+│ │                                                                    │ │
+│ │  id │ email              │ tenant_id │ intervals_api_key_..  │ │ │
+│ │───────────────────────────────────────────────────────────────│ │ │
+│ │ A1  │ juan@errt.com      │ TEAM-001  │ 550e8400-e29b-41d4  │ │ │
+│ │ A2  │ maria@errt.com     │ TEAM-001  │ NULL                │ │ │
+│ │ A3  │ carlos@otherco.com │ TEAM-002  │ 660e8400-e29b-41d5  │ │ │
+│ │                                                                    │ │
+│ │ intervals_api_key_encrypted = UUID (reference to Vault, NOT      │ │
+│ │                               the plaintext key)                  │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ FUNCTION: store_intervals_key(athlete_id, tenant_id, api_key)     │ │
+│ │                                                                    │ │
+│ │  1. Validate: athlete with athlete_id EXISTS in tenant_id        │ │
+│ │  2. Encrypt: vault.create_secret(api_key) → returns UUID         │ │
+│ │  3. Store: UPDATE athletes SET intervals_api_key_encrypted = UUID│ │
+│ │  4. Return: BOOLEAN (true = success)                             │ │
+│ │  5. Security: SECURITY DEFINER (only backend can call)           │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ FUNCTION: get_intervals_key(athlete_id, tenant_id)               │ │
+│ │                                                                    │ │
+│ │  1. Validate: athlete with athlete_id EXISTS in tenant_id        │ │
+│ │  2. Fetch: SELECT intervals_api_key_encrypted → get UUID         │ │
+│ │  3. Decrypt: SELECT decrypted_secret FROM vault.decrypted_..     │ │
+│ │  4. Return: TEXT (the plaintext key, temporary in memory)        │ │
+│ │  5. Security: SECURITY DEFINER (only backend can call)           │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ VAULT ENCRYPTION (Supabase native)                               │ │
+│ │                                                                    │ │
+│ │  vault.secrets table (system-managed, encrypted at rest)         │ │
+│ │                                                                    │ │
+│ │  id                              │ secret (encrypted)             │ │
+│ │  550e8400-e29b-41d4-a716-446655 │ [encrypted blob]              │ │
+│ │  660e8400-e29b-41d5-a717-446656 │ [encrypted blob]              │ │
+│ │                                                                    │ │
+│ │  Each secret is encrypted with Supabase master key               │ │
+│ │  Only accessible via vault.decrypted_secrets view                │ │
+│ │  with proper permissions (SECURITY DEFINER functions)            │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             │ Returns: UUID or
+                             │ Returns: plaintext (temporary)
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BACKEND API (continued)                                                  │
+│                                                                          │
+│ // When creating workout in Intervals:                                  │
+│ const apiKey = await supabaseAdmin.rpc('get_intervals_key', {  });     │
+│ // apiKey is now "353s8jyj62zdo4jkc2sfvfhwi" (plaintext, memory-only) │
+│                                                                          │
+│ // Use it to call Intervals API:                                        │
+│ const auth = Buffer.from(`API_KEY:${apiKey}`).toString('base64');       │
+│ const response = await fetch('https://intervals.icu/api/v1/...', {      │
+│   headers: { 'Authorization': `Basic ${auth}` }                         │
+│ });                                                                      │
+│ // Then discard apiKey (garbage collected)                              │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             │ HTTPS POST
+                             │ Authorization: Basic [base64]
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ INTERVALS.ICU API                                                        │
+│ - Receives workout creation request                                      │
+│ - Validates API key                                                      │
+│ - Returns: workout_id                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+2. SECURITY LAYERS
+================================================================================
+
+LAYER 1: Frontend → Backend
+┌──────────────────────────────────────────────────────────────────────────┐
+│ anon/authenticated JWT (user level)                                      │
+│ - Frontend can authenticate as logged-in user                           │
+│ - BUT cannot call store_intervals_key, get_intervals_key directly       │
+│ - Returns: 403 Permission Denied                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+LAYER 2: Backend → Supabase
+┌──────────────────────────────────────────────────────────────────────────┐
+│ service_role JWT (backend only - SECRET!)                               │
+│ - Backend has full admin permissions                                    │
+│ - CAN call SECURITY DEFINER functions                                   │
+│ - Functions validate: athlete_id + tenant_id combination                │
+│ - Returns: encrypted UUID or plaintext (temporary)                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+LAYER 3: Vault Encryption
+┌──────────────────────────────────────────────────────────────────────────┐
+│ vault.secrets (Supabase managed encryption)                             │
+│ - Keys stored encrypted at rest                                         │
+│ - Supabase master key controls access                                   │
+│ - Decryption only in memory for RPC function calls                      │
+│ - No plaintext in logs or storage                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+LAYER 4: SECURITY DEFINER
+┌──────────────────────────────────────────────────────────────────────────┐
+│ SQL functions execute with creator (admin) permissions                  │
+│ - Caller doesn't need SELECT/UPDATE/DELETE rights                      │
+│ - Only can call, not modify function                                    │
+│ - Backend validates multi-tenant access before allowing                │
+│ - All access logged internally                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+LAYER 5: Multi-tenant Validation
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Every function checks: SELECT 1 FROM athletes                           │
+│                        WHERE id = athlete_id                            │
+│                        AND tenant_id = requested_tenant_id              │
+│                                                                          │
+│ - Prevents accessing other team's data                                 │
+│ - Raises exception if mismatch                                         │
+│ - Backend should also validate (belt + suspenders)                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+
+3. EXAMPLE FLOW: COACH CONNECTS INTERVALS
+================================================================================
+
+Step 1: Coach inputs API key in UI form
+  Input: "353s8jyj62zdo4jkc2sfvfhwi"
+  ↓
+
+Step 2: Frontend sends to backend
+  POST /api/athletes/123/intervals/connect
+  Body: { apiKey: "353s8jyj62zdo4jkc2sfvfhwi" }
+  Auth: Bearer [anon JWT]
+  ↓
+
+Step 3: Backend receives (with service_role JWT in environment)
+  const apiKey = req.body.apiKey;
+  const athleteId = '123';
+  const tenantId = 'TEAM-001';
+  ↓
+
+Step 4: Backend calls Supabase RPC
+  supabaseAdmin.rpc('store_intervals_key', {
+    p_athlete_id: '123',
+    p_tenant_id: 'TEAM-001',
+    p_api_key: '353s8jyj62zdo4jkc2sfvfhwi'
+  })
+  ↓
+
+Step 5: PostgreSQL function executes (in Vault)
+  IF NOT EXISTS (SELECT 1 FROM athletes
+                 WHERE id = '123'
+                 AND tenant_id = 'TEAM-001')
+    → Athlete FOUND, continue
+  ↓
+
+Step 6: Create secret in Vault
+  vault.create_secret('353s8jyj62zdo4jkc2sfvfhwi', 'intervals_api_key')
+  → Returns: UUID 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+  ↓
+
+Step 7: Store UUID in athletes table
+  UPDATE athletes
+  SET intervals_api_key_encrypted = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+  WHERE id = '123' AND tenant_id = 'TEAM-001'
+  ↓
+
+Step 8: Return to backend
+  Function returns: true
+  ↓
+
+Step 9: Backend returns to frontend
+  Response: { success: true, message: 'API key stored' }
+  ↓
+
+Step 10: Coach sees success message
+  ✅ "Intervals account connected!"
+
+
+4. EXAMPLE FLOW: CREATE WORKOUT IN INTERVALS
+================================================================================
+
+Step 1: Coach creates workout in UI
+  Inputs: name="10x400m", description="Warmup...", etc.
+  ↓
+
+Step 2: Frontend sends to backend
+  POST /api/athletes/123/workouts
+  Body: { name: "10x400m", description: "..." }
+  ↓
+
+Step 3: Backend needs to get decrypted API key
+  supabaseAdmin.rpc('get_intervals_key', {
+    p_athlete_id: '123',
+    p_tenant_id: 'TEAM-001'
+  })
+  ↓
+
+Step 4: PostgreSQL function executes (in Vault)
+  SELECT intervals_api_key_encrypted FROM athletes
+  WHERE id = '123' AND tenant_id = 'TEAM-001'
+  → Gets: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+  ↓
+
+Step 5: Decrypt from Vault
+  SELECT decrypted_secret FROM vault.decrypted_secrets
+  WHERE id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+  → Decrypts to: '353s8jyj62zdo4jkc2sfvfhwi'
+  ↓
+
+Step 6: Return plaintext to backend (temporary in memory)
+  Function returns: '353s8jyj62zdo4jkc2sfvfhwi'
+  ↓
+
+Step 7: Backend uses key to call Intervals API
+  const apiKey = '353s8jyj62zdo4jkc2sfvfhwi';
+  const auth = Buffer.from(`API_KEY:${apiKey}`).toString('base64');
+  fetch('https://intervals.icu/api/v1/athlete/0/events', {
+    headers: { Authorization: `Basic ${auth}` },
+    body: { name: "10x400m", description: "..." }
+  })
+  ↓
+
+Step 8: Intervals API validates and creates workout
+  Returns: { id: 999, name: "10x400m", ... }
+  ↓
+
+Step 9: Backend discards apiKey (garbage collected)
+  → apiKey is no longer in memory
+  ↓
+
+Step 10: Backend returns workout_id to frontend
+  Response: { success: true, workoutId: 999 }
+  ↓
+
+Step 11: Coach sees new workout in Intervals.icu
+  ✅ "Workout created successfully!"
+
+
+5. WHAT'S PROTECTED?
+================================================================================
+
+✅ API Keys are ENCRYPTED in database (vault.secrets)
+   - Never stored as plaintext
+   - Even if database is compromised, keys are encrypted
+
+✅ Frontend CANNOT access keys
+   - anon JWT blocked by SECURITY DEFINER
+   - No RPC endpoint for frontend to call
+   - 403 Permission Denied error
+
+✅ Multi-tenant ISOLATION
+   - Can't access other team's keys
+   - Function validates (athlete_id, tenant_id) pair
+   - Raises exception on mismatch
+
+✅ Keys are TEMPORARY in memory
+   - get_intervals_key() only decrypts for function execution
+   - Plaintext is not stored anywhere
+   - Garbage collected after response
+
+✅ Service role is PROTECTED
+   - Only backend has access to SUPABASE_SERVICE_ROLE_KEY
+   - Never exposed in frontend code
+   - Never committed to git
+   - Stored in environment variables
+
+
+6. WHAT'S NOT PROTECTED?
+================================================================================
+
+⚠️ Network traffic (HTTP/HTTPS)
+   - Use HTTPS (you are, good!)
+   - Man-in-the-middle could intercept
+   - Not in scope of this implementation
+
+⚠️ Backend server security
+   - Backend must protect service_role key
+   - Don't log plaintext API keys
+   - Use environment variables, secrets management
+   - Not in scope (AGENTE 4 handles)
+
+⚠️ Supabase account security
+   - Your Supabase password
+   - Master key for Vault
+   - Not in scope (Supabase responsibility)
+
+⚠️ Intervals.icu account security
+   - The original API key creation
+   - Intervals security practices
+   - Not in scope
+
+
+7. FILE LOCATIONS
+================================================================================
+
+Main implementation:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/supabase_functions_vault.sql
+
+Deployment guide:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/SQL_DEPLOYMENT_GUIDE.md
+
+Backend reference:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/backend_integration_example.js
+
+Executive summary:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/AGENTE_1_ENTREGA_SQL_SPECIALIST.md
+
+Validation:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/VALIDATION_CHECKLIST.sql
+
+Quick start:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/QUICK_START.md
+
+This diagram:
+  /c/Bright-Drive-Agent/Proyects/Runing Team ERRT/ARCHITECTURE_DIAGRAM.txt
+
+
+================================================================================
+End of Architecture Diagram
+Created: 2026-04-15
+SQL Specialist Delivery - Bright Drive ERRT
+================================================================================
