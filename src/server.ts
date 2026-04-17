@@ -736,8 +736,16 @@ export async function createServer(): Promise<FastifyInstance> {
     // TELEGRAM-PROTECTED ROUTES
     // ============================================
 
-    // Register Telegram endpoints (from fastifyTelegramEndpoints.ts)
-    await registerTelegramEndpoints(fastify);
+    // Initialize Telegram Bot (will be launched in startServer)
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+    let bot = null;
+    if (telegramToken) {
+      bot = initTelegramBot(telegramToken);
+      console.log('🤖 Telegram Bot initialized (will launch after server starts)');
+    }
+
+    // Register Telegram endpoints with bot instance
+    await registerTelegramEndpoints(fastify, bot);
 
     // ============================================
     // Error handling
@@ -753,6 +761,10 @@ export async function createServer(): Promise<FastifyInstance> {
     });
 
     console.log('Server initialized successfully');
+
+    // Attach bot to fastify instance so it can be accessed in startServer
+    (fastify as any).telegramBot = bot;
+
     return fastify;
 
   } catch (err) {
@@ -789,20 +801,19 @@ export async function startServer(port: number = 3000) {
     `);
 
     // ============================================
-    // INITIALIZE & LAUNCH TELEGRAM BOT
+    // LAUNCH TELEGRAM BOT
     // ============================================
-    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (telegramToken) {
+    const bot = (fastify as any).telegramBot;
+    if (bot) {
       try {
-        console.log('🤖 Initializing Telegram Bot...');
-        const bot = initTelegramBot(telegramToken);
+        console.log('🤖 Launching Telegram Bot...');
 
-        // Launch bot (polling mode)
+        // Launch bot (webhook mode)
         await launchTelegramBot(bot);
 
         console.log('✅ Telegram Bot online and listening for messages');
       } catch (botErr) {
-        console.error('⚠️ Telegram Bot initialization failed:', botErr);
+        console.error('⚠️ Telegram Bot launch failed:', botErr);
         console.error('Continuing without Telegram bot...');
       }
     } else {

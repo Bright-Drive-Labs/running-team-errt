@@ -10,10 +10,10 @@ import { supabase } from '../lib/supabase';
  * Usage in main server file:
  * ```
  * import registerTelegramEndpoints from './handlers/fastifyTelegramEndpoints';
- * registerTelegramEndpoints(fastifyInstance);
+ * registerTelegramEndpoints(fastifyInstance, botInstance);
  * ```
  */
-export async function registerTelegramEndpoints(fastify: FastifyInstance) {
+export async function registerTelegramEndpoints(fastify: FastifyInstance, bot?: any) {
 
   /**
    * POST /api/telegram/test
@@ -410,8 +410,18 @@ export async function registerTelegramEndpoints(fastify: FastifyInstance) {
           timestamp: new Date().toISOString()
         });
 
-        // The bot will handle this update when configured with this webhook
-        // For now, acknowledge receipt
+        // Process the update with the bot if available
+        if (bot && request.body) {
+          try {
+            await bot.handleUpdate(request.body);
+            console.log('[TELEGRAM WEBHOOK] Update processed successfully');
+          } catch (err) {
+            console.error('[TELEGRAM WEBHOOK] Error processing update:', err);
+          }
+        } else {
+          console.warn('[TELEGRAM WEBHOOK] Bot not available, update not processed');
+        }
+
         return reply.status(200).send({ ok: true });
 
       } catch (err) {
