@@ -39,13 +39,34 @@ export function initTelegramBot(token: string): Telegraf<CoachContext> {
         return;
       }
 
-      // Search for authorized coach in database
-      const { data: coach, error } = await supabase
+      console.log(`[TELEGRAM AUTH] Attempting to authorize user ID: ${telegramUserId}`);
+
+      // Search for authorized coaches in database
+      // Note: There may be multiple coaches with the same telegram_user_id
+      const { data: coaches, error } = await supabase
         .from('athletes')
         .select('id, tenant_id, name, email, is_admin')
         .eq('telegram_user_id', telegramUserId)
-        .eq('is_admin', true)
-        .single();
+        .eq('is_admin', true);
+
+      if (error) {
+        console.error('[TELEGRAM AUTH] Database error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+      }
+
+      console.log('[TELEGRAM AUTH] Query result:', {
+        found: (coaches?.length || 0) > 0,
+        matches: coaches?.length || 0,
+        coaches: coaches?.map(c => ({ id: c.id, name: c.name, email: c.email })),
+        error: error?.message
+      });
+
+      // Use the first matching coach (in case multiple exist with same telegram_user_id)
+      const coach = coaches && coaches.length > 0 ? coaches[0] : null;
 
       if (error || !coach) {
         await ctx.reply(
@@ -62,7 +83,7 @@ export function initTelegramBot(token: string): Telegraf<CoachContext> {
           actor_type: 'TELEGRAM_BOT',
           actor_name: ctx.from?.username || ctx.from?.first_name || 'unknown',
           status: 'DENIED',
-          error_message: 'Unauthorized telegram user attempting access'
+          error_message: `Unauthorized: ${error?.message || 'No coach found with is_admin=true'}`
         }).catch(err => console.error('Audit log error (non-blocking):', err.message));
         return;
       }
@@ -70,6 +91,8 @@ export function initTelegramBot(token: string): Telegraf<CoachContext> {
       // Attach coach information to context
       ctx.coach = coach;
       ctx.tenant_id = coach.tenant_id;
+
+      console.log(`[TELEGRAM AUTH] ✅ Authorized: ${coach.name} (${coach.id})`);
 
       // Continue to next middleware/handler
       await next();

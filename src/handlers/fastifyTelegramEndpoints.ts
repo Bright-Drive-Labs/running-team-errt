@@ -313,6 +313,93 @@ export async function registerTelegramEndpoints(fastify: FastifyInstance, bot?: 
   );
 
   /**
+   * GET /api/telegram/debug-auth
+   * Diagnostic endpoint - Check current authentication status
+   *
+   * Headers:
+   * - X-Telegram-User-Id: The Telegram user ID to check
+   *
+   * Returns: Detailed info about what's in the DB for this user
+   */
+  fastify.get<{ Querystring: { telegram_id?: string }; Reply: any }>(
+    '/api/telegram/debug-auth',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const telegramId = request.query.telegram_id || request.headers['x-telegram-user-id'];
+
+        if (!telegramId) {
+          return reply.status(400).send({
+            error: 'Missing telegram_id query param or X-Telegram-User-Id header'
+          });
+        }
+
+        console.log(`[DEBUG AUTH] Checking Telegram ID: ${telegramId}`);
+
+        // Check if user exists in athletes table
+        const { data: allMatches, error: error1 } = await supabase
+          .from('athletes')
+          .select('id, name, email, is_admin, telegram_user_id')
+          .eq('telegram_user_id', telegramId);
+
+        console.log('[DEBUG AUTH] All matches with this telegram_user_id:', {
+          count: allMatches?.length || 0,
+          data: allMatches,
+          error: error1?.message
+        });
+
+        // Check specifically for coaches (is_admin=true)
+        const { data: coachMatches, error: error2 } = await supabase
+          .from('athletes')
+          .select('id, tenant_id, name, email, is_admin')
+          .eq('telegram_user_id', telegramId)
+          .eq('is_admin', true);
+
+        console.log('[DEBUG AUTH] Coach query result:', {
+          found: (coachMatches?.length || 0) > 0,
+          count: coachMatches?.length || 0,
+          data: coachMatches,
+          error: error2?.message
+        });
+
+        // Check all coaches (is_admin=true) to see sample data
+        const { data: allCoaches, error: error3 } = await supabase
+          .from('athletes')
+          .select('id, name, email, telegram_user_id, is_admin')
+          .eq('is_admin', true)
+          .limit(5);
+
+        return reply.status(200).send({
+          query_telegram_id: telegramId,
+          all_matches_with_id: {
+            count: allMatches?.length || 0,
+            data: allMatches,
+            error: error1?.message
+          },
+          coach_matches: {
+            count: coachMatches?.length || 0,
+            found: (coachMatches?.length || 0) > 0,
+            data: coachMatches,
+            note: coachMatches && coachMatches.length > 1 ? '⚠️ Multiple coaches found - bot will use the first one' : coachMatches && coachMatches.length === 1 ? '✅ Single coach found' : '❌ No coaches found',
+            error: error2?.message
+          },
+          sample_all_coaches: {
+            count: allCoaches?.length || 0,
+            data: allCoaches,
+            error: error3?.message
+          }
+        });
+
+      } catch (err) {
+        console.error('Debug auth endpoint error:', err);
+        return reply.status(500).send({
+          error: 'Internal server error',
+          details: err instanceof Error ? err.message : 'Unknown error'
+        });
+      }
+    }
+  );
+
+  /**
    * GET /api/telegram/athletes
    * List team athletes
    *
