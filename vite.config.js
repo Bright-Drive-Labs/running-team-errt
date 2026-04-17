@@ -9,10 +9,10 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    port: 5174,
-    strictPort: true,
+    port: 5173,
+    strictPort: false,
     hmr: {
-      port: 5174
+      port: 5173
     }
   }
 })
