@@ -295,8 +295,14 @@ export default function AthletePortal() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
         body: JSON.stringify({ workout_id: workout.id })
       });
-      if (response.ok) alert("🚀 ¡Sincronizado con Garmin!");
-      else alert("❌ Error al sincronizar. Contacta al Coach.");
+      if (response.ok) {
+        alert("🚀 ¡Sincronizado con Garmin!");
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        alert(`❌ Error al sincronizar: ${errData.error || 'Problema desconocido'}\n\n${errData.details || ''}`);
+      }
+    } catch (err) {
+      alert("❌ Error de red al sincronizar.");
     } finally { setProcessingId(null); }
   };
 
@@ -659,7 +665,12 @@ export default function AthletePortal() {
                       </p>
                       
                       <div className={`monolith-code mb-12 ${isMissed ? 'text-zinc-600' : 'text-white/60'} p-10 bg-black/50 rounded-lg border border-white/5 font-mono text-sm leading-relaxed whitespace-pre-wrap shadow-inner`}>
-                        {w.markdown_payload.split('\\n').map((l, j) => <div key={j}>{l}</div>)}
+                        {w.friendly_description 
+                          ? w.friendly_description.replace(/\\n/g, '\n')
+                          : w.markdown_payload
+                              .replace(/\\n/g, '\n')
+                              .replace(/ intensity=\w+/g, '') // Hide technical intensity tags
+                        }
                       </div>
                       
                       {w.coach_notes && (
