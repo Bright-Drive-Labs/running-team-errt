@@ -782,12 +782,10 @@ export default function AthletePortal() {
                            </div>
                         </div>
                      </div>
+                  </div>
 
-
-
-
-                 <div className="bg-white/[0.02] p-10 rounded-lg border border-white/5 flex flex-col lg:flex-row gap-10 items-end">
-                    <div className="flex-1 space-y-6">
+                  <div className="bg-white/[0.02] p-10 rounded-lg border border-white/5 flex flex-col lg:flex-row gap-10 items-end">
+                     <div className="flex-1 space-y-6">
                         <div className="flex items-center gap-3 text-racing-red border-b border-racing-red/20 pb-3"><AlertCircle className="w-4 h-4" /><h4 className="text-xs font-black uppercase tracking-widest italic">Plan de Emergencia (S.O.S)</h4></div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                            <div className="space-y-2"><label className="text-[11px] font-black text-white/30 uppercase block">Contacto Responsable</label><input value={editForm.emergency_contact_name} onChange={e => setEditForm({...editForm, emergency_contact_name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-5 py-4 text-base font-black uppercase italic" /></div>
