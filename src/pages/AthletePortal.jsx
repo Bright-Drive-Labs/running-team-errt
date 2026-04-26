@@ -503,9 +503,12 @@ export default function AthletePortal() {
                                       className={`w-full bg-transparent rounded px-1 py-1.5 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
                                       placeholder="00:00" 
                                     />
-                                    <div className="text-[11px] text-white/20 font-black uppercase text-center mt-1">
-                                      {profileForm[`${key}_date`] ? new Date(profileForm[`${key}_date`]).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "DD/MM/YYYY"}
-                                    </div>
+                                    <input 
+                                      type="date"
+                                      value={profileForm[`${key}_date`] || ""}
+                                      onChange={e => setProfileForm({...profileForm, [`${key}_date`]: e.target.value})}
+                                      className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
+                                    />
                                   </div>
                                 );
                               })}
