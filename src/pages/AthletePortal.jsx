@@ -518,12 +518,48 @@ export default function AthletePortal() {
                                       type="date"
                                       value={profileForm[`${key}_date`]?.split('T')[0] || ""}
                                       onChange={e => setProfileForm({...profileForm, [`${key}_date`]: e.target.value})}
-                                      className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
+                                      className="w-full bg-transparent text-[13px] text-white font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1 hover:text-racing-red transition-colors"
                                     />
                                   </div>
                                 );
                               })}
                            </div>
+
+                           {/* LIVE PACE ZONES FOR ATHLETE */}
+                           {(() => {
+                             const zones = calculatePaceZones({
+                               pb_5k: profileForm.pb_5k,
+                               pb_10k: profileForm.pb_10k,
+                               pb_21k: profileForm.pb_21k,
+                               pb_42k: profileForm.pb_42k
+                             });
+                             if (!zones) return null;
+                             return (
+                               <div className="mt-8 space-y-3 bg-white/5 p-4 rounded-lg border border-white/10">
+                                 <label className="text-[11px] font-black text-racing-red uppercase italic flex items-center justify-center gap-2">
+                                   <Gauge className="w-3.5 h-3.5" /> Ritmos de Entrenamiento Sugeridos
+                                 </label>
+                                 <div className="grid grid-cols-5 gap-2">
+                                   {Object.entries(zones).map(([z, p]) => {
+                                     const zoneId = z.split(' ')[0];
+                                     const colors = {
+                                       'Z1': 'text-green-500 border-green-500/20 bg-green-500/5',
+                                       'Z2': 'text-blue-400 border-blue-400/20 bg-blue-400/5',
+                                       'Z3': 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5',
+                                       'Z4': 'text-orange-500 border-orange-500/20 bg-orange-500/5',
+                                       'Z5': 'text-racing-red border-racing-red/20 bg-racing-red/5'
+                                     };
+                                     return (
+                                       <div key={z} className={`flex flex-col items-center justify-center p-2 rounded border ${colors[zoneId] || 'text-white border-white/10'}`}>
+                                         <span className="text-[8px] font-black uppercase mb-0.5 opacity-60">{zoneId}</span>
+                                         <span className="text-[13px] font-mono font-black">{p}</span>
+                                       </div>
+                                     );
+                                   })}
+                                 </div>
+                               </div>
+                             );
+                           })()}
 
                            <div className="p-4 bg-racing-red/5 border border-racing-red/20 rounded flex items-start gap-3">
                               <AlertCircle className="w-5 h-5 text-racing-red mt-0.5" />
@@ -680,12 +716,48 @@ export default function AthletePortal() {
                                        type="date"
                                        value={editForm[`${key}_date`]?.split('T')[0] || ""}
                                        onChange={e => setEditForm({...editForm, [`${key}_date`]: e.target.value})}
-                                       className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
+                                       className="w-full bg-transparent text-[13px] text-white font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1 hover:text-racing-red transition-colors"
                                     />
                                   </div>
                                 );
                               })}
                            </div>
+
+                           {/* LIVE PACE ZONES FOR COACH */}
+                           {(() => {
+                             const zones = calculatePaceZones({
+                               pb_5k: editForm.pb_5k,
+                               pb_10k: editForm.pb_10k,
+                               pb_21k: editForm.pb_21k,
+                               pb_42k: editForm.pb_42k
+                             });
+                             if (!zones) return null;
+                             return (
+                               <div className="mt-8 space-y-3 bg-white/5 p-4 rounded-lg border border-white/10">
+                                 <label className="text-[11px] font-black text-racing-red uppercase italic flex items-center justify-center gap-2">
+                                   <Gauge className="w-3.5 h-3.5" /> Ritmos de Entrenamiento Sugeridos
+                                 </label>
+                                 <div className="grid grid-cols-5 gap-2">
+                                   {Object.entries(zones).map(([z, p]) => {
+                                     const zoneId = z.split(' ')[0];
+                                     const colors = {
+                                       'Z1': 'text-green-500 border-green-500/20 bg-green-500/5',
+                                       'Z2': 'text-blue-400 border-blue-400/20 bg-blue-400/5',
+                                       'Z3': 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5',
+                                       'Z4': 'text-orange-500 border-orange-500/20 bg-orange-500/5',
+                                       'Z5': 'text-racing-red border-racing-red/20 bg-racing-red/5'
+                                     };
+                                     return (
+                                       <div key={z} className={`flex flex-col items-center justify-center p-2 rounded border ${colors[zoneId] || 'text-white border-white/10'}`}>
+                                         <span className="text-[8px] font-black uppercase mb-0.5 opacity-60">{zoneId}</span>
+                                         <span className="text-[13px] font-mono font-black">{p}</span>
+                                       </div>
+                                     );
+                                   })}
+                                 </div>
+                               </div>
+                             );
+                           })()}
                            <div className="space-y-4">
                               <div className="grid grid-cols-2 gap-4">
                                  <div className="space-y-1 text-center font-bold">
@@ -702,26 +774,12 @@ export default function AthletePortal() {
                                  <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={editForm.resting_hr} onChange={e => setEditForm({...editForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
                                  <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={editForm.max_hr} onChange={e => setEditForm({...editForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
                               </div>
-
-                              {selectedAthleteDetails.zone_paces && (
-                                <div className="mt-8 space-y-3">
-                                  <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-2">
-                                    <Gauge className="w-3.5 h-3.5" /> Zonas de Ritmo (Pace)
-                                  </label>
-                                  <div className="grid grid-cols-5 gap-1.5">
-                                    {Object.entries(selectedAthleteDetails.zone_paces).map(([z, p]) => (
-                                      <div key={z} className={`flex flex-col items-center justify-center p-2 rounded border border-white/5 bg-black/20`}>
-                                        <span className="text-[8px] font-black text-white/20 uppercase mb-0.5">{z}</span>
-                                        <span className="text-[11px] font-mono font-black text-white/80">{p}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              </div>
                            </div>
                         </div>
-                    </div>
+                     </div>
+
+
+
 
                  <div className="bg-white/[0.02] p-10 rounded-lg border border-white/5 flex flex-col lg:flex-row gap-10 items-end">
                     <div className="flex-1 space-y-6">
