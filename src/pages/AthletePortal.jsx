@@ -649,12 +649,10 @@ export default function AthletePortal() {
                                   </div>
                                 </div>
                               )}
-                           </div>
                               </div>
                            </div>
                         </div>
                     </div>
-                 </div>
 
                  <div className="bg-white/[0.02] p-10 rounded-lg border border-white/5 flex flex-col lg:flex-row gap-10 items-end">
                     <div className="flex-1 space-y-6">
