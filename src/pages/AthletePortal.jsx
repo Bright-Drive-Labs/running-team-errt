@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
+import { calculatePaceZones } from '../lib/vdot-calculator';
 import { Activity, Calendar, MessageSquare, Zap, CheckCircle, XCircle, Loader2, Users, LayoutDashboard, ChevronRight, Save, ShieldCheck, User, Gauge, Heart, AlertCircle, Trophy, Shirt, Phone, Crown, Lock } from 'lucide-react';
 
 const supabase = createClient(
@@ -246,12 +247,42 @@ export default function AthletePortal() {
 
     updateData.profile_completed = true;
 
+    // --- VDOT & PACE ZONES CALCULATION ---
+    let paceZonesChanged = false;
+    let oldPB = "";
+    let newPB = "";
+    if (updateData.pb_5k_date || updateData.pb_10k_date || updateData.pb_21k_date || updateData.pb_42k_date) {
+      const newZones = calculatePaceZones({
+        pb_5k: profileForm.pb_5k,
+        pb_10k: profileForm.pb_10k,
+        pb_21k: profileForm.pb_21k,
+        pb_42k: profileForm.pb_42k
+      });
+      if (newZones) {
+        updateData.zone_paces = newZones;
+        paceZonesChanged = true;
+      }
+    }
+
     const { error } = await supabase
       .from('athletes')
       .update(updateData)
       .eq('email', user.email);
     
     if (!error) {
+      if (paceZonesChanged) {
+        try {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL || ''}/api/telegram/notify-coach`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tenant_id: athlete.tenant_id,
+              message: `⚡ **Actualización de Ritmos**\n\nEl atleta **${athlete.first_name} ${athlete.last_name}** ha actualizado sus marcas personales.\n\nSus Zonas de Entrenamiento (Z1-Z5) han sido recalculadas automáticamente con el Método VDOT de Jack Daniels.\n\n_Puedes revisarlo en el Mando de Atleta._`
+            })
+          });
+        } catch (err) { console.error("Error sending telegram notification", err) }
+      }
+
       setSaveStatus('success');
       // Recargamos el perfil para que el usuario vea sus datos actualizados inmediatamente
       await fetchAthleteProfile(user.email);
@@ -280,10 +311,34 @@ export default function AthletePortal() {
 
     // Auto-update dates if coach changes them
     const now = new Date().toISOString().split('T')[0];
-    if (editForm.pb_5k !== prevAthlete?.pb_5k) updateData.pb_5k_date = now;
-    if (editForm.pb_10k !== prevAthlete?.pb_10k) updateData.pb_10k_date = now;
-    if (editForm.pb_21k !== prevAthlete?.pb_21k) updateData.pb_21k_date = now;
-    if (editForm.pb_42k !== prevAthlete?.pb_42k) updateData.pb_42k_date = now;
+    let pbsChanged = false;
+    if (editForm.pb_5k !== prevAthlete?.pb_5k) { updateData.pb_5k_date = now; pbsChanged = true; }
+    if (editForm.pb_10k !== prevAthlete?.pb_10k) { updateData.pb_10k_date = now; pbsChanged = true; }
+    if (editForm.pb_21k !== prevAthlete?.pb_21k) { updateData.pb_21k_date = now; pbsChanged = true; }
+    if (editForm.pb_42k !== prevAthlete?.pb_42k) { updateData.pb_42k_date = now; pbsChanged = true; }
+
+    // --- VDOT & PACE ZONES CALCULATION ---
+    if (pbsChanged) {
+      const newZones = calculatePaceZones({
+        pb_5k: editForm.pb_5k,
+        pb_10k: editForm.pb_10k,
+        pb_21k: editForm.pb_21k,
+        pb_42k: editForm.pb_42k
+      });
+      if (newZones) {
+        updateData.zone_paces = newZones;
+        try {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL || ''}/api/telegram/notify-coach`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tenant_id: selectedAthleteDetails.tenant_id,
+              message: `⚡ **Actualización de Ritmos**\n\nLas marcas personales de **${selectedAthleteDetails.first_name} ${selectedAthleteDetails.last_name}** han sido modificadas por un Coach.\n\nLas Zonas de Entrenamiento (Z1-Z5) han sido recalculadas automáticamente.`
+            })
+          });
+        } catch (err) { console.error("Error sending telegram notification", err) }
+      }
+    }
 
     const { error } = await supabase.from('athletes').update(updateData).eq('id', selectedAthleteDetails.id);
     if (!error) {

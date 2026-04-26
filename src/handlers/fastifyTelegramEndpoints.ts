@@ -186,6 +186,49 @@ export async function registerTelegramEndpoints(fastify: FastifyInstance, bot?: 
   );
 
   /**
+   * POST /api/telegram/notify-coach
+   * Notifies all coaches (is_admin=true) for a tenant via Telegram.
+   * 
+   * Body:
+   * {
+   *   "tenant_id": "...",
+   *   "message": "..."
+   * }
+   */
+  fastify.post<{ Body: { tenant_id: string; message: string }; Reply: any }>(
+    '/api/telegram/notify-coach',
+    async (request, reply) => {
+      try {
+        if (!bot) return reply.status(503).send({ error: 'Bot not configured' });
+        const { tenant_id, message } = request.body;
+        if (!tenant_id || !message) return reply.status(400).send({ error: 'Missing parameters' });
+
+        const { data: coaches } = await supabase
+          .from('athletes')
+          .select('telegram_user_id')
+          .eq('tenant_id', tenant_id)
+          .eq('is_admin', true)
+          .not('telegram_user_id', 'is', null);
+
+        if (coaches && coaches.length > 0) {
+          let notified = 0;
+          for (const coach of coaches) {
+            try {
+              await bot.telegram.sendMessage(coach.telegram_user_id, message, { parse_mode: 'Markdown' });
+              notified++;
+            } catch(e) { console.error('Failed to notify coach', e) }
+          }
+          return reply.status(200).send({ success: true, notified });
+        }
+        return reply.status(200).send({ success: true, notified: 0 });
+      } catch (err) {
+        console.error('Notify coach endpoint error:', err);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  /**
    * GET /api/telegram/workouts
    * List workouts for the coach's team
    *
