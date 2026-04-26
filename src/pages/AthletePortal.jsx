@@ -137,6 +137,7 @@ export default function AthletePortal() {
           resting_hr: athleteData.resting_hr || '', max_hr: athleteData.max_hr || '',
           weight: athleteData.weight || '', height: athleteData.height || '', birth_date: athleteData.birth_date || '', shirt_size: athleteData.shirt_size || '',
           intervals_athlete_id: athleteData.intervals_athlete_id || '',
+          intervals_api_key: athleteData.intervals_api_key || '',
           group_tag: athleteData.group_tag || 'PRINCIPIANTE', is_vip: athleteData.is_vip || false
         });
         if (athleteData.profile_completed === false || athleteData.profile_completed === null) {
@@ -219,31 +220,49 @@ export default function AthletePortal() {
     setProcessingId('profile');
     setSaveStatus(null);
 
-    // Si no es VIP, no dejamos enviar datos de sincronización
+    // Limpiamos los datos usando la lógica de sanitización diseñada
     const updateData = sanitizeAthleteData(profileForm);
     
-    // Auto-update dates for benchmarks if they changed
+    // PROTECCIÓN DE API KEY:
+    // Si el campo de la API Key no ha sido modificado (está vacío o tiene el placeholder de encriptación),
+    // lo eliminamos del objeto de actualización para no sobrescribir la llave encriptada real en la base de datos.
+    if (!profileForm.intervals_api_key || profileForm.intervals_api_key === athlete.intervals_api_key) {
+      delete updateData.intervals_api_key;
+    }
+    
+    // Lógica inteligente: Si el atleta cambia su marca (PB), 
+    // registramos automáticamente el día de hoy como la fecha de ese récord.
     const now = new Date().toISOString().split('T')[0];
     if (profileForm.pb_5k !== athlete.pb_5k) updateData.pb_5k_date = now;
     if (profileForm.pb_10k !== athlete.pb_10k) updateData.pb_10k_date = now;
     if (profileForm.pb_21k !== athlete.pb_21k) updateData.pb_21k_date = now;
     if (profileForm.pb_42k !== athlete.pb_42k) updateData.pb_42k_date = now;
 
+    // Solo los atletas VIP pueden guardar su ID de sincronización de Intervals/Garmin
     if (!athlete.is_vip) {
       delete updateData.intervals_athlete_id;
       delete updateData.intervals_api_key;
     }
 
     updateData.profile_completed = true;
-    const { error } = await supabase.from('athletes').update(updateData).eq('email', user.email);
+
+    const { error } = await supabase
+      .from('athletes')
+      .update(updateData)
+      .eq('email', user.email);
     
     if (!error) {
       setSaveStatus('success');
+      // Recargamos el perfil para que el usuario vea sus datos actualizados inmediatamente
       await fetchAthleteProfile(user.email);
-      setTimeout(() => { setIsEditingProfile(false); setSaveStatus(null); }, 1500);
+      setTimeout(() => { 
+        setIsEditingProfile(false); 
+        setSaveStatus(null); 
+      }, 1500);
     } else {
       setSaveStatus('error');
-      alert(`❌ Error: ${error.message}`);
+      console.error("Error al guardar en Supabase:", error);
+      alert(`❌ Error del Comando: ${error.message}`);
     }
     setProcessingId(null);
   };
@@ -253,9 +272,14 @@ export default function AthletePortal() {
     setProcessingId('coach-edit');
     const updateData = sanitizeAthleteData(editForm);
     
+    // PROTECCIÓN DE API KEY (Coach):
+    const prevAthlete = allAthletes.find(a => a.id === selectedAthleteDetails.id);
+    if (!editForm.intervals_api_key || editForm.intervals_api_key === prevAthlete?.intervals_api_key) {
+      delete updateData.intervals_api_key;
+    }
+
     // Auto-update dates if coach changes them
     const now = new Date().toISOString().split('T')[0];
-    const prevAthlete = allAthletes.find(a => a.id === selectedAthleteDetails.id);
     if (editForm.pb_5k !== prevAthlete?.pb_5k) updateData.pb_5k_date = now;
     if (editForm.pb_10k !== prevAthlete?.pb_10k) updateData.pb_10k_date = now;
     if (editForm.pb_21k !== prevAthlete?.pb_21k) updateData.pb_21k_date = now;
@@ -280,6 +304,7 @@ export default function AthletePortal() {
       resting_hr: a.resting_hr || '', max_hr: a.max_hr || '', weight: a.weight || '', height: a.height || '', birth_date: a.birth_date || '',
       shirt_size: a.shirt_size || '', emergency_contact_name: a.emergency_contact_name || '', emergency_phone_1: a.emergency_phone_1 || '',
       emergency_phone_2: a.emergency_phone_2 || '', intervals_athlete_id: a.intervals_athlete_id || '',
+      intervals_api_key: a.intervals_api_key || '',
       is_coach: a.is_coach || false, is_vip: a.is_vip || false
     });
   };
@@ -378,7 +403,16 @@ export default function AthletePortal() {
                              <>
                                <div className="p-4 bg-white/[0.02] border border-white/5 rounded italic text-xs text-white/40 mb-4 tracking-tight leading-relaxed font-bold">IMPORTANTE: Conecta tu ID de Intervals.icu para cargar entrenamientos automáticamente.</div>
                                <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">ID Intervals.icu</label><input value={profileForm.intervals_athlete_id} onChange={e => setProfileForm({...profileForm, intervals_athlete_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-sm font-mono font-bold" /></div>
-                               <div className="p-3 bg-white/[0.02] border border-white/5 rounded text-[10px] text-white/30 italic tracking-tight">🔒 La API Key de Intervals está protegida y encriptada. Para actualizarla, contacta al Coach.</div>
+                               <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">API Key Intervals</label>
+                                 <input 
+                                   type="password"
+                                   placeholder={athlete.intervals_api_key ? "• • • • • • • • • • • •" : "Ingresa tu API Key"} 
+                                   value={profileForm.intervals_api_key === athlete.intervals_api_key ? "" : profileForm.intervals_api_key} 
+                                   onChange={e => setProfileForm({...profileForm, intervals_api_key: e.target.value})} 
+                                   className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-sm font-mono font-bold" 
+                                 />
+                               </div>
+                               <div className="p-3 bg-white/[0.02] border border-white/5 rounded text-[10px] text-white/30 italic tracking-tight">🔒 La API Key está protegida. Al escribir una nueva se actualizará tu conexión.</div>
                              </>
                            )}
                            <div className="pt-4 border-t border-white/5 space-y-1">
@@ -411,15 +445,29 @@ export default function AthletePortal() {
                                     <input 
                                       value={profileForm[key]} 
                                       onChange={e => setProfileForm({...profileForm, [key]: e.target.value})} 
-                                      className={`w-full bg-transparent rounded px-1 py-2 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
+                                      className={`w-full bg-transparent rounded px-1 py-1.5 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
                                       placeholder="00:00" 
                                     />
-                                    <p className="text-[7px] text-white/10 font-black uppercase mt-1 leading-none">
-                                      {profileForm[`${key}_date`] ? new Date(profileForm[`${key}_date`]).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: '2-digit' }) : 'S/D'}
-                                    </p>
+                                    <input 
+                                       type="date"
+                                       value={profileForm[`${key}_date`] || ""}
+                                       onChange={e => setProfileForm({...profileForm, [`${key}_date`]: e.target.value})}
+                                       className="w-full bg-transparent text-[8px] text-white/20 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
+                                    />
                                   </div>
                                 );
                               })}
+                           </div>
+                           
+                           <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
+                              <div className="space-y-1 text-center font-bold">
+                                 <label className="text-[11px] font-black text-white/30 uppercase italic">Peso (kg)</label>
+                                 <input type="number" step="0.1" value={profileForm.weight} onChange={e => setProfileForm({...profileForm, weight: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                              </div>
+                              <div className="space-y-1 text-center font-bold">
+                                 <label className="text-[11px] font-black text-white/30 uppercase italic">Altura (cm)</label>
+                                 <input type="number" value={profileForm.height} onChange={e => setProfileForm({...profileForm, height: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                              </div>
                            </div>
                            
                            <div className="p-3 bg-racing-red/5 border border-racing-red/20 rounded flex items-start gap-2">
@@ -501,7 +549,16 @@ export default function AthletePortal() {
                               </select>
                            </div>
                            <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">ID Intervals</label><input value={editForm.intervals_athlete_id} onChange={e => setEditForm({...editForm, intervals_athlete_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-base font-mono" /></div>
-                           <div className="p-3 bg-white/[0.02] border border-white/5 rounded text-[10px] text-white/30 italic">🔒 API Key encriptada en Vault. Usa el script de migración para actualizar.</div>
+                           <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">API Key Intervals</label>
+                             <input 
+                               type="text" 
+                               value={editForm.intervals_api_key === selectedAthleteDetails.intervals_api_key ? "" : editForm.intervals_api_key} 
+                               onChange={e => setEditForm({...editForm, intervals_api_key: e.target.value})} 
+                               className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-sm font-mono placeholder:text-white/10" 
+                               placeholder={selectedAthleteDetails.intervals_api_key ? "• • • • • • • • • • • •" : "Sin API Key"}
+                             />
+                           </div>
+                           <div className="p-3 bg-white/[0.02] border border-white/5 rounded text-[10px] text-white/30 italic">🔒 API Key gestionada encriptada. Solo ingresar si se desea sobrescribir.</div>
                            <div className="grid grid-cols-1 gap-4 mt-6">
                               <label className="flex items-center gap-5 p-5 bg-white/5 rounded border border-white/10 cursor-pointer hover:bg-racing-red/10 transition-all group">
                                  <input type="checkbox" checked={editForm.is_coach} onChange={e => setEditForm({...editForm, is_coach: e.target.checked})} className="w-6 h-6 accent-racing-red" />
@@ -539,9 +596,12 @@ export default function AthletePortal() {
                                       onChange={e => setEditForm({...editForm, [key]: e.target.value})} 
                                       className={`w-full bg-transparent border border-white/10 rounded px-1 py-1.5 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
                                     />
-                                    <p className="text-[7px] text-white/10 font-black uppercase mt-1 leading-none">
-                                      {editForm[`${key}_date`] ? new Date(editForm[`${key}_date`]).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: '2-digit' }) : 'S/D'}
-                                    </p>
+                                    <input 
+                                       type="date"
+                                       value={editForm[`${key}_date`] || ""}
+                                       onChange={e => setEditForm({...editForm, [`${key}_date`]: e.target.value})}
+                                       className="w-full bg-transparent text-[8px] text-white/20 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
+                                    />
                                   </div>
                                 );
                               })}
