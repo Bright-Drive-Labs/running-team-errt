@@ -274,12 +274,15 @@ export default function AthletePortal() {
         try {
           const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
           console.log(`[NOTIFY] Enviando notificación a: ${backendUrl}/api/telegram/notify-coach`);
+          const zones = updateData.zone_paces;
+          const paceMessage = `⚡ **Actualización de Ritmos**\n\nEl atleta **${athlete.first_name} ${athlete.last_name}** ha actualizado sus marcas personales.\n\n**Nuevos Ritmos Calculados:**\n🏃 Z1 (E): ${zones['Z1 / E']}\n🏃 Z2 (M): ${zones['Z2 / M']}\n🏃 Z3 (T): ${zones['Z3 / T']}\n🏃 Z4 (I): ${zones['Z4 / I']}\n🏃 Z5 (R): ${zones['Z5 / R']}\n\n_Método VDOT de Jack Daniels_`;
+
           await fetch(`${backendUrl}/api/telegram/notify-coach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenant_id: athlete.tenant_id,
-              message: `⚡ **Actualización de Ritmos**\n\nEl atleta **${athlete.first_name} ${athlete.last_name}** ha actualizado sus marcas personales.\n\nSus Zonas de Entrenamiento (Z1-Z5) han sido recalculadas automáticamente con el Método VDOT de Jack Daniels.\n\n_Puedes revisarlo en el Mando de Atleta._`
+              message: paceMessage
             })
           });
         } catch (err) { console.error("Error sending telegram notification", err) }
@@ -332,12 +335,15 @@ export default function AthletePortal() {
         try {
           const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
           console.log(`[NOTIFY] Enviando notificación a: ${backendUrl}/api/telegram/notify-coach`);
+          const zones = updateData.zone_paces;
+          const paceMessage = `⚡ **Actualización de Ritmos**\n\nLas marcas personales de **${selectedAthleteDetails.first_name} ${selectedAthleteDetails.last_name}** han sido modificadas por un Coach.\n\n**Nuevos Ritmos Calculados:**\n🏃 Z1 (E): ${zones['Z1 / E']}\n🏃 Z2 (M): ${zones['Z2 / M']}\n🏃 Z3 (T): ${zones['Z3 / T']}\n🏃 Z4 (I): ${zones['Z4 / I']}\n🏃 Z5 (R): ${zones['Z5 / R']}\n\n_Zonas recalculadas automáticamente._`;
+
           await fetch(`${backendUrl}/api/telegram/notify-coach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenant_id: selectedAthleteDetails.tenant_id,
-              message: `⚡ **Actualización de Ritmos**\n\nLas marcas personales de **${selectedAthleteDetails.first_name} ${selectedAthleteDetails.last_name}** han sido modificadas por un Coach.\n\nLas Zonas de Entrenamiento (Z1-Z5) han sido recalculadas automáticamente.`
+              message: paceMessage
             })
           });
         } catch (err) { console.error("Error sending telegram notification", err) }
