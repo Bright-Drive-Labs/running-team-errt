@@ -285,7 +285,9 @@ export default function AthletePortal() {
               message: paceMessage
             })
           });
-        } catch (err) { console.error("Error sending telegram notification", err) }
+        } catch (err) { 
+          console.error("Error sending telegram notification. Check if VITE_BACKEND_URL is correct and CORS is allowed.", err);
+        }
       }
 
       setSaveStatus('success');
@@ -346,7 +348,9 @@ export default function AthletePortal() {
               message: paceMessage
             })
           });
-        } catch (err) { console.error("Error sending telegram notification", err) }
+        } catch (err) { 
+          console.error("Error sending coach telegram notification. Check backend URL and CORS.", err);
+        }
       }
     }
 
