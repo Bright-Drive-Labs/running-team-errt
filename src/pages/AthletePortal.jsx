@@ -448,39 +448,34 @@ export default function AthletePortal() {
                                       className={`w-full bg-transparent rounded px-1 py-1.5 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
                                       placeholder="00:00" 
                                     />
-                                    <input 
-                                       type="date"
-                                       value={profileForm[`${key}_date`] || ""}
-                                       onChange={e => setProfileForm({...profileForm, [`${key}_date`]: e.target.value})}
-                                       className="w-full bg-transparent text-[8px] text-white/20 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
-                                    />
-                                  </div>
                                 );
                               })}
                            </div>
-                           
-                           <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/5">
-                              <div className="space-y-1 text-center font-bold">
-                                 <label className="text-[11px] font-black text-white/30 uppercase italic">Peso (kg)</label>
-                                 <input type="number" step="0.1" value={profileForm.weight} onChange={e => setProfileForm({...profileForm, weight: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
-                              </div>
-                              <div className="space-y-1 text-center font-bold">
-                                 <label className="text-[11px] font-black text-white/30 uppercase italic">Altura (cm)</label>
-                                 <input type="number" value={profileForm.height} onChange={e => setProfileForm({...profileForm, height: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
-                              </div>
-                           </div>
-                           
-                           <div className="p-3 bg-racing-red/5 border border-racing-red/20 rounded flex items-start gap-2">
-                              <AlertCircle className="w-4 h-4 text-racing-red mt-0.5" />
+
+                           <div className="p-4 bg-racing-red/5 border border-racing-red/20 rounded flex items-start gap-3">
+                              <AlertCircle className="w-5 h-5 text-racing-red mt-0.5" />
                               <div className="flex flex-col">
-                                 <p className="text-[10px] font-black text-racing-red uppercase tracking-widest italic">Guía de Tiempos:</p>
+                                 <p className="text-[11px] font-black text-racing-red uppercase tracking-widest italic">Guía de Tiempos:</p>
                                  <p className="text-[10px] text-white/60 font-bold italic leading-tight">Usa MM:SS para 5K/10K y HH:MM:SS para media y maratón completa.</p>
                               </div>
                            </div>
+                           
+                           <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="space-y-1 text-center font-bold">
+                                    <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-1">Peso (kg)</label>
+                                    <input type="number" step="0.1" value={profileForm.weight} onChange={e => setProfileForm({...profileForm, weight: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                                 </div>
+                                 <div className="space-y-1 text-center font-bold">
+                                    <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-1">Altura (cm)</label>
+                                    <input type="number" value={profileForm.height} onChange={e => setProfileForm({...profileForm, height: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                                 </div>
+                              </div>
 
-                           <div className="grid grid-cols-2 gap-4 pt-4">
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={profileForm.resting_hr} onChange={e => setProfileForm({...profileForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={profileForm.max_hr} onChange={e => setProfileForm({...profileForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={profileForm.resting_hr} onChange={e => setProfileForm({...profileForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
+                                 <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={profileForm.max_hr} onChange={e => setProfileForm({...profileForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -600,19 +595,28 @@ export default function AthletePortal() {
                                        type="date"
                                        value={editForm[`${key}_date`] || ""}
                                        onChange={e => setEditForm({...editForm, [`${key}_date`]: e.target.value})}
-                                       className="w-full bg-transparent text-[8px] text-white/20 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
+                                       className="w-full bg-transparent text-[10px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
                                     />
                                   </div>
                                 );
                               })}
                            </div>
-                           <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-white/30 uppercase">Peso (kg)</label><input type="number" step="0.1" value={editForm.weight} onChange={e => setEditForm({...editForm, weight: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-base text-center font-black" /></div>
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-white/30 uppercase">Altura (cm)</label><input type="number" value={editForm.height} onChange={e => setEditForm({...editForm, height: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-base text-center font-black" /></div>
-                           </div>
-                           <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={editForm.resting_hr} onChange={e => setEditForm({...editForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
-                              <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={editForm.max_hr} onChange={e => setEditForm({...editForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
+                           <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="space-y-1 text-center font-bold">
+                                    <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-1">Peso (kg)</label>
+                                    <input type="number" step="0.1" value={editForm.weight} onChange={e => setEditForm({...editForm, weight: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                                 </div>
+                                 <div className="space-y-1 text-center font-bold">
+                                    <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-1">Altura (cm)</label>
+                                    <input type="number" value={editForm.height} onChange={e => setEditForm({...editForm, height: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-lg font-black text-center" />
+                                 </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={editForm.resting_hr} onChange={e => setEditForm({...editForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
+                                 <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={editForm.max_hr} onChange={e => setEditForm({...editForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
+                              </div>
                            </div>
                         </div>
                     </div>
