@@ -448,6 +448,10 @@ export default function AthletePortal() {
                                       className={`w-full bg-transparent rounded px-1 py-1.5 text-sm font-black italic text-center ${isLatest ? 'text-white' : 'text-white/60'}`} 
                                       placeholder="00:00" 
                                     />
+                                    <div className="text-[11px] text-white/20 font-black uppercase text-center mt-1">
+                                      {profileForm[`${key}_date`] ? new Date(profileForm[`${key}_date`]).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : "DD/MM/YYYY"}
+                                    </div>
+                                  </div>
                                 );
                               })}
                            </div>
@@ -544,7 +548,19 @@ export default function AthletePortal() {
                               </select>
                            </div>
                            <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">ID Intervals</label><input value={editForm.intervals_athlete_id} onChange={e => setEditForm({...editForm, intervals_athlete_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-base font-mono" /></div>
-                           <div className="space-y-1"><label className="text-[11px] font-black text-white/30 uppercase tracking-widest">API Key Intervals</label>
+                           <div className="space-y-1">
+                             <div className="flex justify-between items-center">
+                               <label className="text-[11px] font-black text-white/30 uppercase tracking-widest">API Key Intervals</label>
+                               {selectedAthleteDetails.intervals_api_key ? (
+                                 <span className="text-[9px] bg-green-500/20 text-green-500 px-2 py-0.5 rounded flex items-center gap-1 font-black italic border border-green-500/30">
+                                   <CheckCircle className="w-2.5 h-2.5" /> CARGADA
+                                 </span>
+                               ) : (
+                                 <span className="text-[9px] bg-racing-red/20 text-racing-red px-2 py-0.5 rounded flex items-center gap-1 font-black italic border border-racing-red/30">
+                                   <XCircle className="w-2.5 h-2.5" /> SIN LLAVE
+                                 </span>
+                               )}
+                             </div>
                              <input 
                                type="text" 
                                value={editForm.intervals_api_key === selectedAthleteDetails.intervals_api_key ? "" : editForm.intervals_api_key} 
@@ -595,7 +611,7 @@ export default function AthletePortal() {
                                        type="date"
                                        value={editForm[`${key}_date`] || ""}
                                        onChange={e => setEditForm({...editForm, [`${key}_date`]: e.target.value})}
-                                       className="w-full bg-transparent text-[10px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer"
+                                       className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
                                     />
                                   </div>
                                 );
@@ -616,6 +632,24 @@ export default function AthletePortal() {
                               <div className="grid grid-cols-2 gap-4">
                                  <div className="space-y-1 text-center"><label className="text-[11px] font-black text-green-500/40 uppercase italic flex items-center justify-center gap-1"><Heart className="w-4 h-4"/>FC Reposo</label><input type="number" value={editForm.resting_hr} onChange={e => setEditForm({...editForm, resting_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-green-500 text-center" /></div>
                                  <div className="space-y-1 text-center"><label className="text-[11px] font-black text-racing-red/40 uppercase italic flex items-center justify-center gap-1"><Activity className="w-4 h-4"/>FC Máxima</label><input type="number" value={editForm.max_hr} onChange={e => setEditForm({...editForm, max_hr: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded px-4 py-3 text-xl font-black text-racing-red text-center" /></div>
+                              </div>
+
+                              {selectedAthleteDetails.zone_paces && (
+                                <div className="mt-8 space-y-3">
+                                  <label className="text-[11px] font-black text-white/30 uppercase italic flex items-center justify-center gap-2">
+                                    <Gauge className="w-3.5 h-3.5" /> Zonas de Ritmo (Pace)
+                                  </label>
+                                  <div className="grid grid-cols-5 gap-1.5">
+                                    {Object.entries(selectedAthleteDetails.zone_paces).map(([z, p]) => (
+                                      <div key={z} className={`flex flex-col items-center justify-center p-2 rounded border border-white/5 bg-black/20`}>
+                                        <span className="text-[8px] font-black text-white/20 uppercase mb-0.5">{z}</span>
+                                        <span className="text-[11px] font-mono font-black text-white/80">{p}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                           </div>
                               </div>
                            </div>
                         </div>
