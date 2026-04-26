@@ -272,7 +272,9 @@ export default function AthletePortal() {
     if (!error) {
       if (paceZonesChanged) {
         try {
-          await fetch(`${import.meta.env.VITE_BACKEND_URL || ''}/api/telegram/notify-coach`, {
+          const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+          console.log(`[NOTIFY] Enviando notificación a: ${backendUrl}/api/telegram/notify-coach`);
+          await fetch(`${backendUrl}/api/telegram/notify-coach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -328,7 +330,9 @@ export default function AthletePortal() {
       if (newZones) {
         updateData.zone_paces = newZones;
         try {
-          await fetch(`${import.meta.env.VITE_BACKEND_URL || ''}/api/telegram/notify-coach`, {
+          const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+          console.log(`[NOTIFY] Enviando notificación a: ${backendUrl}/api/telegram/notify-coach`);
+          await fetch(`${backendUrl}/api/telegram/notify-coach`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -505,7 +509,7 @@ export default function AthletePortal() {
                                     />
                                     <input 
                                       type="date"
-                                      value={profileForm[`${key}_date`] || ""}
+                                      value={profileForm[`${key}_date`]?.split('T')[0] || ""}
                                       onChange={e => setProfileForm({...profileForm, [`${key}_date`]: e.target.value})}
                                       className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
                                     />
@@ -667,7 +671,7 @@ export default function AthletePortal() {
                                     />
                                     <input 
                                        type="date"
-                                       value={editForm[`${key}_date`] || ""}
+                                       value={editForm[`${key}_date`]?.split('T')[0] || ""}
                                        onChange={e => setEditForm({...editForm, [`${key}_date`]: e.target.value})}
                                        className="w-full bg-transparent text-[11px] text-white/40 font-black uppercase text-center border-none focus:ring-0 cursor-pointer mt-1"
                                     />
