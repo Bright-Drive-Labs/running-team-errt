@@ -29,7 +29,8 @@ const sanitizeAthleteData = (formData) => {
   return cleanData;
 };
 
-const getZoneStyles = (zone) => {
+const getZoneStyles = (zoneLabel) => {
+  const zone = zoneLabel.split(' ')[0];
   const styles = {
     "Z5": "text-racing-red bg-racing-red/10 border-racing-red/20 scale-105 shadow-lg",
     "Z4": "text-orange-500 bg-orange-500/5 border-orange-500/10",
