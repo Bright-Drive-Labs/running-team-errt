@@ -360,6 +360,7 @@ export default function AthletePortal() {
     setEditForm({
       first_name: a.first_name || '', last_name: a.last_name || '', email: a.email || '', phone: a.phone || '', dni: a.dni || '',
       group_tag: a.group_tag || 'PRINCIPIANTE', pb_5k: a.pb_5k || '', pb_10k: a.pb_10k || '', pb_21k: a.pb_21k || '', pb_42k: a.pb_42k || '',
+      pb_5k_date: a.pb_5k_date || '', pb_10k_date: a.pb_10k_date || '', pb_21k_date: a.pb_21k_date || '', pb_42k_date: a.pb_42k_date || '',
       resting_hr: a.resting_hr || '', max_hr: a.max_hr || '', weight: a.weight || '', height: a.height || '', birth_date: a.birth_date || '',
       shirt_size: a.shirt_size || '', emergency_contact_name: a.emergency_contact_name || '', emergency_phone_1: a.emergency_phone_1 || '',
       emergency_phone_2: a.emergency_phone_2 || '', intervals_athlete_id: a.intervals_athlete_id || '',
